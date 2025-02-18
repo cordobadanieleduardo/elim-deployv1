@@ -1,0 +1,216 @@
+{% extends 'base/base.html' %}
+
+{% block page_content %}
+
+{% if obj %}
+<form method="POST" role="form" class="form-inline" action="{% url 'elim:servicio_edit' obj.pk %}" enctype="multipart/form-data" >
+{% else %}
+<form method="POST" class="form-inline"  action="{% url 'elim:servicio_def' %}"  enctype="multipart/form-data" >
+{% endif %}
+    {% csrf_token %}    
+    <div class="col-xl-6 col-md-6 mb-6">
+        {% if obj %}
+        <div class="card border-left-warning shadow h-100 py-2">
+        {% else %}
+        <div class="card border-left-success shadow h-100 py-2">
+        {% endif %}
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            {% if obj %} Editar {% else %} Nuevo {% endif %} servicio
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <label for="id_fecha" class="form-label">Fecha:</label>
+                                    <!-- <input type="text" name="fecha" maxlength="20" class="form-control" required
+                                        id="id_fecha" placeholder="Fecha"
+                                        value="{% if obj %} {{ obj.fecha }} {% endif %}"> -->
+                                        {{form.fecha}}
+                                </div>
+                            </div>
+                            <!-- <div class="col-2">
+                                <div class="form-group">
+                                    <label for="id_estado">Estado</label>
+                                    <input type="checkbox" name="estado" class="form-control" 
+                                        id="id_estado" 
+                                        {#% if obj.estado %#} checked {#% endif %#}>
+                                </div>
+                            </div> -->      
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <label for="id_cliente" class="form-label">Cliente:</label>
+                                    <input type="text" name="cliente" maxlength="32" class="form-control" required
+                                        id="id_cliente" list="datalistCliente" placeholder="Cliente" >
+                                    <datalist id="datalistCliente">
+                                            {% for item in cliente %}
+                                            <option value="{{item.id}}">{{item.nombre}}</option>
+                                            {% endfor%}
+                                    </datalist>                                                                               
+                                </div>
+                            </div>
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <label for="id_placa" class="form-label">Conductor:</label>
+                                    <input type="text" name="placa" maxlength="6" class="form-control" required
+                                        id="id_placa" list="datalistPlaca" placeholder="Conductor"
+                                        value="{% if obj %} {{ obj.placa }} {% endif %}">
+                                    <datalist id="datalistPlaca">
+                                            {% for item in placa %}
+                                            <option value="{{item.id}}">{{item.placa}}</option>
+                                            {% endfor%}
+                                    </datalist> 
+                                </div>
+                            </div>
+                            
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <label for="id_trayecto" class="form-label">Dirección:</label>
+                                    <input type="text" name="trayecto" maxlength="50" class="form-control" required
+                                        id="id_trayecto" list="datalistTrayecto" placeholder="Dirección del trayecto"
+                                        value="{% if obj %} {{ obj.trayecto }} {% endif %}">
+                                    
+                                    <datalist id="datalistTrayecto">
+                                            {% for item in trayecto %}
+                                            <option value="{{item.id}}">{{item.direccion}}</option>
+                                            {% endfor%}
+                                    </datalist> 
+                                        <!-- {{form.trayecto}} -->
+                                </div>
+                            </div>
+
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <label for="id_solicitado_por" class="form-label">Solicitado por:</label>
+                                    <input type="text" name="solicitador_por" maxlength="50" class="form-control" required
+                                        id="id_solicitado_por" list="datalistSolicitado" placeholder="Solicitado por"
+                                        value="{% if obj %} {{ obj.solicitado_por }} {% endif %}">
+
+                                    <datalist id="datalistSolicitado">
+                                        {% for item in solicitado_por %}
+                                        <option value="{{item.id}}">{{item.nombre}}</option>
+                                        {% endfor%}
+                                    </datalist>
+                                        <!-- {{form.solicitado_por}} -->
+                                </div>
+                            </div>
+
+
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <label for="id_celular" class="form-label">Celular:</label>
+                                    <!-- <input type="text" name="celular" maxlength="10" class="form-control" required
+                                        id="id_celular" placeholder="Celular"
+                                        value="{% if obj %} {{ obj.celular }} {% endif %}"> -->
+                                        {{form.celular}}
+                                </div>
+                            </div>
+
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <label for="id_programador" class= "form-label">Programador: </label>
+                                    <input type="text" name="programador" maxlength="50" class="form-control" 
+                                        id="id_programador" list="datalistProgramador" placeholder="Buscar programador...">
+                                
+                                    <datalist id="datalistProgramador">
+                                            {% for item in programador %}
+                                            <option value="{{item.id}}">{{item.nombre}}</option>
+                                            {% endfor%}
+                                    </datalist>
+                                    <!-- {{form.programador}} -->
+                                </div>
+                            </div>
+
+                            <!-- <div class="col-md-4">
+                                <div class="col-md-6">{{form.placa.label}}</div>
+                                <div class="col-md-6">{{form.programador}}</div>    
+                            </div>   -->
+                            <!-- <div class="col-10">
+                                <div class="input-group">
+                                    <label for="id_programador" class="form-label">Programador:</label>
+                                    <input maxlength="50" class="form-control" list="datalistOptions" id="id_programador" placeholder="Buscar...">
+                                    <datalist id="datalistOptions">
+                                        <option value="Raul">
+                                        <option value="Fulano">
+                                    </datalist>
+                                </div>
+                            </div> -->
+
+                            <div class="col-5">
+                                <div class="input-group">
+
+                                    <!-- <div class="col-md-6">{{form.medio_pago.label}}</div>
+                                    <div class="col-md-6">{{form.medio_pago}}</div> -->
+                                    
+                                    <label for="id_medio_pago" class="col-form-label">Medio pago: </label>
+                                    {{form.medio_pago}}
+
+                                </div>
+                            </div>
+
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <label for="id_valor" class="form-label">Valor: </label>
+                                    <!-- <input type="number" name="valor" maxlength="11" class="form-control" required
+                                            id="id_valor" placeholder="1.000,00"
+                                            value="{% if obj %} {{ obj.valor }} {% endif %}"> -->
+                                    {{form.valor}}
+                                </div>
+                            </div>
+
+                            
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <label for="id_costo" class="form-label">Costo: </label>
+                                    <!-- <input type="number" name="costo" maxlength="11" class="form-control" required
+                                            id="id_costo" placeholder="1.000,00" 
+                                            value="{% if obj %} {{ obj.costo }}  {% endif %}"> -->
+                                    {{form.costo}}
+                                </div>
+                            </div>
+
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <label for="id_neto" class="form-label">Neto: </label>
+                                    <!-- <input type="number" name="neto" maxlength="11" class="form-control" required
+                                            id="id_neto" placeholder="1.000,00"  
+                                            value="{% if obj %} {{ obj.neto }} {% endif %}"> -->
+                                    {{form.neto}}
+                                
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-danger">
+                                    <span class="fa fa-save"></span>
+                                    Guardar
+                                </button>
+                                <a href="{% url 'elim:servicio_list' %}" class="btn btn-success">
+                                    <span class="fa fa-undo"> </span> 
+                                    Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    $(function() {
+        $("#id_programador").val("{{ obj.programador.id }}").change();
+        // $("#id_subcategoria").val("{{ obj.subcategoria.id }}").change();
+        // $("#id_subcategoria").chained("#id_categoria");
+    });
+</script>
+
+{% endblock %}
+{% block js_page %}
+{% endblock %}

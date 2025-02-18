@@ -1,0 +1,40 @@
+{'address_components': [
+        {'long_name': '65-11', 'short_name': '65-11', 'types': ['street_number'
+            ]
+        },
+        {'long_name': 'Calle 12', 'short_name': 'Cl. 12', 'types': ['route'
+            ]
+        },
+        {'long_name': 'Salazar Gomez', 'short_name': 'Salazar Gomez', 'types': ['neighborhood', 'political'
+            ]
+        },
+        {'long_name': 'Puente Aranda', 'short_name': 'Puente Aranda', 'types': ['political', 'sublocality', 'sublocality_level_1'
+            ]
+        },
+        {'long_name': 'Bogotá', 'short_name': 'Bogotá', 'types': ['locality', 'political'
+            ]
+        },
+        {'long_name': 'Bogotá', 'short_name': 'Bogotá', 'types': ['administrative_area_level_1', 'political'
+            ]
+        },
+        {'long_name': 'Colombia', 'short_name': 'CO', 'types': ['country', 'political'
+            ]
+        },
+        {'long_name': '111611', 'short_name': '111611', 'types': ['postal_code'
+            ]
+        }
+    ], 'formatted_address': 'Cl. 12 #65-11, Bogotá, Colombia', 'geometry': {'bounds': {'northeast': {'lat': 4.6344007, 'lng': -74.1159483
+            }, 'southwest': {'lat': 4.631903, 'lng': -74.1181471
+            }
+        }, 'location': {'lat': 4.6330515, 'lng': -74.1170222
+        }, 'location_type': 'GEOMETRIC_CENTER', 'viewport': {'northeast': {'lat': 4.634500830291502, 'lng': -74.1156987197085
+            }, 'southwest': {'lat': 4.631802869708498, 'lng': -74.11839668029151
+            }
+        }
+    }, 'navigation_points': [
+        {'location': {'latitude': 4.6328556, 'longitude': -74.11673789999999
+            }
+        }
+    ], 'partial_match': True, 'place_id': 'ChIJT4568fubP44R5Y2OckVB3J8', 'types': ['premise'
+    ]
+}

@@ -1,0 +1,112 @@
+<!-- {#% extends 'base/base.html' %#}
+
+{#% block page_content %#} -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@^0.4.0/dist/vue-treeselect.min.css">
+    <title>How to</title>
+</head>
+<body>
+    <div id="app" class="container">
+
+        <div class="position-absolute top-50 start-50 translate-middle">
+            <input type="text" v-model="search" class="mb-3">
+           
+            <div class="mb-3">
+                <treeselect v-model="paises.selected" v-bind:options="paises.options" @input="getData" ></treeselect>
+            </div>
+
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <th scope="col">Id</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Category</th>
+                </thead>
+                <tbody>
+                    <tr v-for="data in museos_lists">
+                        <td v-text="data.id"></td>
+                        <td v-text="data.nombre"></td>
+                        <td v-text="data.pais"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>       
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@^0.4.0/dist/vue-treeselect.umd.min.js"></script>
+    <script>
+        var vm = new Vue({
+            el: "#app",
+            components: {
+                'treeselect': VueTreeselect.Treeselect,
+            },
+            data: {
+                search: "",
+                paises: {
+                    options: [],
+                    selected: null,
+                },
+                museos_lists: null,
+            },
+            beforeMount() {
+                this.getPaises();
+                this.getData();
+            },
+            methods: {
+                getPaises() {
+                    var self = this;
+                    var url = "/elim/api/paises/";
+                    $.get(url)
+                        .done(function (response) {                            
+                            response.forEach(element => {
+                                self.paises.options.push({
+                                    id: element.id,
+                                    label: element.nombre,
+                                });
+                            });
+                            self.$forceUpdate();
+                            console.log(self.paises.options)
+                        });
+                },
+                getData() {
+                    var self = this;
+                    var url = "/elim/api/museos/?";
+                    
+                    if(self.search) {
+                        url += "search=" + self.search;
+                    }
+
+                    if (self.paises.selected) {
+                        url += "&pais=" + self.paises.selected;
+                    }
+
+                    $.get(url)
+                        .done(function (response) {
+                            self.museos_lists = response;
+                        });
+                },
+            },
+            watch: {
+                "search":  function() {
+                    this.getData();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+<!-- {#% endblock %#} -->
