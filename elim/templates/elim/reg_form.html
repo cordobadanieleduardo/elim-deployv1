@@ -46,7 +46,8 @@
                                             Fecha
                                         </div>
                                         <div class="col-md-12">                                        
-                                            <input type="datetime" name="fecha" id="fecha" class="form-control" maxlength="19" autocomplete="off">
+                                            <input type="datetime" name="fecha" id="fecha" 
+                                            class="form-control" maxlength="19" autocomplete="off">
                                         </div>                          
                                     </div>
                                 </div>                                
@@ -194,7 +195,8 @@
 
     $("#fecha").datetimepicker({
             format: 'd/m/Y H:i:s',
-            timepicker:true,    
+            timepicker:true,
+            minDate:'16/02/2025 00:00:00'    
     });
 
     $('#cliente').select2({
@@ -226,18 +228,12 @@
     $(function () {
         $("#fecha").focus();
         // $("#id").val("{{ obj.id }}");
-        // $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:m:s' }}");
-        // $("#cliente").val("{{ obj.cliente }}").change();
-        // $("#trayecto").val("{{ obj.trayecto }}").change();
-        // $("#placa").val("{{ obj.placa }}").change();
-        // $("#solicitado_por").val("{{ obj.solicitado_por }}").change();
-        // $("#valor").val("{{ obj.valor }}");
-        // $("#costo").val("{{ obj.costo }}");
-        // $("#neto").val("{{ obj.neto }}");
+        $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
+        $("#cliente").val("{{ obj.cliente }}").change();
+        $("#trayecto").val("{{ obj.trayecto }}").change();
+        $("#placa").val("{{ obj.placa }}").change();
+        $("#solicitado_por").val("{{ obj.solicitado_por }}").change();
 
-        console.log('valor ',$("#trayecto").val()) 
-        // console.log('costo ',$("#costo").val()) 
-        // console.log('neto ',$("#neto").val()) 
     });
 
 

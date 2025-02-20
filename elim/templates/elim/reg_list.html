@@ -17,21 +17,36 @@
   </div>
   <!-- Card Body -->
   <div class="card-body">
+
+    <div class="alert alert-info">
+      <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_direccion_add_new' %}')" href="#"> Nueva dirección </a> 
+      <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_new' %}')" href="#"> Nuevo servicio</a>
+      <a class="btn btn-default" href="{% url 'elim:reg_direccion_new' %}"> Direcciones</a>
+      
+    </div>
+    <br>
+
+
+
     {% if not obj %}
     <div class="alert alert-info">No registros</div>
     {% endif %}
     <table class="table table-striped table-hover dt-responsive nowrap">
       <thead>
         <th class="all">Acciones</th>
-        <th>ID</th>
+        <!-- <th>ID</th> -->
+        <th>Estado</th>
         <th>Fecha</th>        
         <th>Trayecto</th>
         <th>Cliente</th>
         <th>Placa</th>
+        <th>Medio</th>
+        <th>Valor</th>
+        <th>Costo</th>
+        <th>Neto</th>
         <!-- <th>Solicitado por</th> -->
         <!-- <th>Celular</th> -->
         <th>Programador</th>
-        <th>Estado</th>
       </thead>
       <tbody>
         {% for item in obj%}
@@ -44,15 +59,19 @@
                   <i class="far fa-thumbs-down"></i> -->
                 </a>
           </td>
-          <td>{{ item.id }}</td>
+          <!-- <td>{{ item.id }}</td> -->
           <td>{{ item.estado|yesno:"Activo,Inactivo"}}</td>
           <td>{{ item.fecha|date:"d/m/Y H:i:s" }}</td>
           <td>{{ item.trayecto }}</td>
           <td>{{ item.cliente }}</td>
           <td>{{ item.placa}}</td>
+          <td>{{ item.medio_pago}}</td>
+          <td>{{ item.valor}}</td>
+          <td>{{ item.costo}}</td>
+          <td>{{ item.neto}}</td>
           <!-- <td>{{ item.solicitado_por }}</td> -->
           <!-- <td>{{ item.celular }}</td> -->
-          <td>{{ item.um }}</td>
+          <td>{{ item.uc }}</td>
           <!-- <td> <a href="{% url 'elim:cliente_inactivar' item.id %}"> {% if item.estado %} Desactivar {% else %} Activar {% endif %} </a> </td>                        -->
         </tr>
         {% endfor %}

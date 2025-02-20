@@ -75,7 +75,7 @@
       {% url 'elim:cliente_list' as cat_url %}
       {% url 'elim:proveedor_list' as s_cat_url %}
       {% url 'elim:servicio_list' as s_url %}
-      {% url 'elim:trayecto_view' as trayecto_url %}
+      {% url 'elim:reg_direccion_new' as trayecto_url %}
       {% url 'elim:reg_list' as registro_url %}
       <!-- Nav Item - Pages Collapse Menu -->
       <li class="nav-item {% if cat_url in request.path or s_cat_url in request.path %} active {% endif %}">
@@ -554,7 +554,7 @@
       $.confirm({
             title: 'Confirmación',
             content: '{{ message }}, {{ message.tags }}',
-            autoClose: 'Aceptar|5000',
+            autoClose: 'Aceptar|3000',
             buttons: {
                 Aceptar: function () {
                   text: 'Ok'

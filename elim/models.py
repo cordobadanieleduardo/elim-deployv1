@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 import uuid
@@ -72,8 +73,8 @@ class Programador(ClaseModelo):
 
 class Trayecto(ClaseModelo):
     
-    direccion = models.CharField(verbose_name='Dirección',max_length=200,blank=True, null=True)    
-    zipcode = models.CharField(max_length=200,blank=True, null=True)
+    direccion = models.CharField(verbose_name='Dirección',max_length=200)    
+    zipcode = models.CharField(verbose_name='Código postal',max_length=6)
     ciudad = models.CharField(verbose_name='Ciudad',max_length=200,blank=True, null=True)
     pais = models.CharField(verbose_name='Pais',max_length=200,blank=True, null=True)
     lat = models.CharField(verbose_name='Latitud',max_length=200,blank=True, null=True)
@@ -121,7 +122,7 @@ class Vehiculo(ClaseModelo):
         }
 
     def __str__(self):
-        return '{} Conductor: {}'.format(self.placa,self.conductor)
+        return '{}'.format(self.placa)
     
     def save(self):
         super(Vehiculo,self).save()
@@ -203,15 +204,15 @@ class Registro(ClaseModelo):
         TRANSFERENCIA = "TRANSFERENCIA", _("Transferencia")
     numero_registo = models.UUIDField(default=uuid.uuid4,max_length=80)    
     fecha = models.DateTimeField(default=datetime.datetime.now(),null=True,blank=True)
-    trayecto = models.ForeignKey(Trayecto,on_delete=models.RESTRICT,max_length=50)
-    cliente	= models.ForeignKey(Cliente,on_delete=models.RESTRICT,max_length=50)    
-    placa = models.ForeignKey(Vehiculo,on_delete=models.RESTRICT)    
-    solicitado_por = models.ForeignKey(Persona,on_delete=models.RESTRICT)
+    trayecto = models.ForeignKey(Trayecto,on_delete=models.PROTECT)
+    cliente	= models.ForeignKey(Cliente,on_delete=models.PROTECT)    
+    placa = models.ForeignKey(Vehiculo,on_delete=models.PROTECT)    
+    solicitado_por = models.ForeignKey(Persona,on_delete=models.PROTECT)
     celular = models.CharField(max_length=10)
     medio_pago = models.CharField(max_length=15,choices=Medio_pago,default=Medio_pago.CONTADO)
-    valor = models.DecimalField(max_digits=9, decimal_places=2,default=0.0)
-    costo = models.DecimalField(max_digits=9, decimal_places=2 ,default=0.0)
-    neto = models.DecimalField(max_digits=9, decimal_places=2,default=0.0 )
+    valor = models.DecimalField(max_digits=9, decimal_places=2, default=0.0)
+    costo = models.DecimalField(max_digits=9, decimal_places=2, default=0.0)
+    neto = models.DecimalField(max_digits=9, decimal_places=2, default=0.0 )
     
     def __str__(self):
         return '{}'.format(self.placa)

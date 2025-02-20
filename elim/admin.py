@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .forms import ServicioForm
+#from .forms import ServicioForm
 # Register your models here.
 
 from .models import Persona,\

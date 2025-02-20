@@ -9,8 +9,9 @@ from . import views
 
 urlpatterns = [
     path('clientes/',views.ClienteView.as_view(), name='cliente_list'),
-    path('clientes/new',views.ClienteNew.as_view(), name='cliente_new'),
+    path('clientes/new/',views.ClienteNew.as_view(), name='cliente_new'),
     path('clientes/edit/<int:pk>',views.ClienteEdit.as_view(), name='cliente_edit'),
+    path('clientes/inactivar/<int:id>',views.cliente_inactivar, name='cliente_inactivar'),
     path('clientes/delete/<int:pk>',views.ClienteDel.as_view(), name='cliente_del'),
 
     path('proveedores/',views.ProveedorView.as_view(), name='proveedor_list'),
@@ -33,15 +34,17 @@ urlpatterns = [
     # path('registros/edit/<int:pk>',views.RegistroEdit.as_view(), name='reg_edit'),
     path('registros/new',views.reg_add_edit, name='reg_new'),
     path('registros/edit/<int:id>',views.reg_add_edit, name='reg_edit'),
-    path('registros/inactivar/<int:id>',views.cliente_inactivar, name="cliente_inactivar"),
+    # path('registros/inactivar/<int:id>',views.cliente_inactivar, name="cliente_inactivar"),
 
+    path('registros/lista/direccion/',views.TrayectoView.as_view(), name='reg_direccion_new'),
+    path('registros/direccion/new/',views.TrayectoNew.as_view(), name='reg_direccion_add_new'),
 
     path('prueba/', views.index, name="index"),
     path('js', views.index_js, name="index-js"),
     path('localizacion', views.localizacion, name="local"),
     
     
-    path('trayectos', views.HomeTrayectosView.as_view(), name='trayecto_view'), 
+    path('trayectos/', views.HomeTrayectosView.as_view(), name='trayecto_view'), 
     path('trayectos/<int:pk>', views.ActInaTrayectoView.as_view(), name='actina_view'), 
     path('rutas/', views.rutas, name="route"),
     path('geocoding/<int:pk>', views.GeocodingView.as_view(), name='geocoding_view'),     

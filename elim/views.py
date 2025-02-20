@@ -14,7 +14,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required, permission_required
 
 from .models import Cliente,Proveedor,Servicio,Vehiculo,Programador,Trayecto,Persona,Museo, Pais, Registro, Locations,Distances
-from .forms import ClienteForm,ProveedorForm, ServicioForm, MuseoForm , RegistroForm, DistanceForm #, TrayectoForm
+from .forms import ClienteForm,ProveedorForm, ServicioForm, MuseoForm , RegistroForm, DistanceForm, TrayectoForm
 
 from bases.views import SinPrivilegios
 from django.views import View
@@ -46,6 +46,29 @@ class VistaBaseEdit(SuccessMessageMixin,SinPrivilegios, \
     
     def form_valid(self, form):
         form.instance.um = self.request.user.id
+        return super().form_valid(form) 
+
+
+class VistaDireccionCreate(SuccessMessageMixin,SinPrivilegios, \
+    generic.CreateView):
+    context_object_name = 'obj'
+    success_message="Registro agregado satisfactoriamente"
+
+    def form_valid(self, form):
+        print('*-*-*-*-')
+        form.instance.uc = self.request.user
+        form.instance.direccion = str(form.instance.direccion).strip()
+        print('*-*-*-*-',  form.instance.direccion)        
+        return super().form_valid(form)
+
+class VistaDireccionEdit(SuccessMessageMixin,SinPrivilegios, \
+    generic.UpdateView):
+    context_object_name = 'obj'
+    success_message="Registro actualizado satisfactoriamente"
+    
+    def form_valid(self, form):
+        form.instance.um = self.request.user.id
+        form.instance.direccion = str(form.instance.direccion).strip()
         return super().form_valid(form) 
 
 
@@ -129,17 +152,84 @@ def cliente_inactivar(request,id):
     if cliente:
         cliente.estado = not cliente.estado
         cliente.save()
-        return redirect('elim:reg_list')
-
-        # return HttpResponse("OK")
-            
-    # if request.method=="POST":
-    #     if cliente:
-    #         cliente.estado = not cliente.estado
-    #         cliente.save()
-    #         return HttpResponse("OK")
-    #     return HttpResponse("FAIL")    
+        return redirect('elim:cliente_list')    
     return HttpResponse("FAIL")
+
+
+# Create your views Trayecto.
+
+class TrayectoView(SinPrivilegios, generic.ListView):
+    permission_required = "elim.view_trayecto"
+    model = Trayecto
+    template_name = "trayectos/trayecto_list.html"
+    context_object_name = "obj"
+    ordering = ['-id']
+
+class TrayectoNew(VistaDireccionCreate):
+    model=Trayecto
+    template_name="trayectos/trayecto_form.html"
+    context_object_name="obj"
+    form_class=TrayectoForm
+    success_url=reverse_lazy("elim:reg_list")
+    success_message="Trayecto creado satisfactoriamente"
+    permission_required="elim.add_trayecto" 
+    
+    # def get_object(self, queryset = ...):        
+    #     print('oe',self)
+    #     return super().get_object(queryset)
+    def get(self, request, *args, **kwargs):
+        print('/*/*/*/*/',self)
+        print('/*/*/*/*/',request)
+        print('/*/*/*/*/',args)
+        print('/*/*/*/*/',**kwargs)   
+        if request.method == 'GET':
+            print('-++--++-+- metodo get')             
+        return super().get(request, *args, **kwargs)
+    def is_valid(self):
+        print('.......')
+        valid = super().is_valid()
+        if not valid:
+            return False
+        # Custom Logic
+        return True
+    
+    
+    # def form_valid(self, form):
+    #     print('oooooooo', self)
+        
+    #     # form.instance.direccion = str(self.request.obj.direccion).strip()
+        
+    #     return super().form_valid(form)
+    # def is_valid(self):
+    #     valid = super().is_valid()
+    #     print('***,',self)
+    #     print('***valid,',valid)
+    #     if not valid:
+    #         print('invaliado')
+    #         return False
+    #     # Custom Logic
+    #     return True
+
+class TrayectoEdit(VistaDireccionEdit):
+    permission_required="elim.change_trayecto"
+    model = Trayecto
+    template_name = "trayecto/trayecto_form.html"
+    context_object_name = "obj"
+    form_class = TrayectoForm
+    success_url = reverse_lazy("elim:reg_direccion_new")
+    success_message = "Trayecto actualizado satisfactoriamente"
+
+# @login_required(login_url="/login/")
+# @permission_required("elim.change_trayecto",login_url="/login/")
+# def direccion_inactivar(request,id):
+#     trayecto = Trayecto.objects.filter(pk=id).first()
+#     print('trayecto',trayecto)
+#     if trayecto:
+#         trayecto.estado = not trayecto.estado
+#         trayecto.save()
+#         return redirect('elim:trayecto_list')   
+#     return HttpResponse("FAIL")
+
 
 # Create your views proveedor.
 
@@ -198,11 +288,11 @@ class RegistroView(SuccessMessageMixin, SinPrivilegios, generic.ListView):
         #print(context)
         return context
     
-    # def get_queryset(self):        
-    #     qs = super().get_queryset().all() #filter(estado=True)        
-    #     # for q in qs:
-    #     #     print(q.uc,q.id)        
-    #     return qs
+    def get_queryset(self):        
+        qs = super().get_queryset().filter(estado=True)        
+        # for q in qs:
+        #     print(q.uc,q.id)        
+        return qs
 
 
 class RegistroNew(SuccessMessageMixin,SinPrivilegios, generic.CreateView):
@@ -262,7 +352,7 @@ class RegistroEdit(SuccessMessageMixin, SinPrivilegios, generic.UpdateView):
 def reg_add_edit(request,id=None):
     
     print('id---',id)
-    
+    #datetime.strptime(reg.fecha, '%d/%m/%Y %H:%i:%S'), #, datetime.date.isoformat(reg.fecha),
     context={
         'form': RegistroForm(),
         'clientes':Cliente.objects.filter(estado=True),
@@ -273,22 +363,21 @@ def reg_add_edit(request,id=None):
         'google_api_key' : settings.GOOGLE_API_KEY,
         'base_country':settings.BASE_COUNTRY
     }
-
+    
+    registro = {'fecha': datetime.now()}
+    context ['obj'] = registro                        
     template_name = 'elim/reg_form.html'
 
     if request.method == 'GET':
         if id:
             reg = Registro.objects.filter(pk=id).first()
-            if reg:
-                #messages.error(request,'Cliente No Existe')
-                #return redirect("elim:reg_list")
-            #else:                      
+            if reg:                      
                 registro = {
                     'id':reg.id,
-                    'fecha': reg.fecha, #, datetime.date.isoformat(reg.fecha),
+                    'fecha': reg.fecha, 
                     'cliente':reg.cliente.id,                    
                     'placa':reg.placa,
-                    'trayecto':reg.trayecto.id,
+                    'trayecto': reg.trayecto.id,
                     'solicitado_por':reg.solicitado_por.id,
                     'celular':reg.celular,
                     'medio_pago':reg.medio_pago,
@@ -333,7 +422,7 @@ def reg_add_edit(request,id=None):
                 messages.error(request, reg_form.errors)
         else:
             reg.um = request.user.id
-            reg.fecha = datetime.strptime(request.POST.get("fecha") , '%d/%m/%Y %H:%m:%S')
+            reg.fecha = datetime.strptime(request.POST.get("fecha") , '%d/%m/%Y %H:%M:%S')
             reg.trayecto = Trayecto.objects.get(pk=trayecto)
             reg.cliente = Cliente.objects.get(pk=cliente)
             reg.solicitado_por = Persona.objects.get(pk=solicitado_por)
@@ -349,7 +438,7 @@ def reg_add_edit(request,id=None):
         
             if reg_form.is_valid():
                 reg.save()
-                messages.success(request,'Cliente actualizado')
+                messages.success(request,'Servicio actualizado')
                 return redirect('elim:reg_list')
             else:
                 print(reg_form.errors)
@@ -538,7 +627,7 @@ class GeocodingView(View):
             return redirect('elim:trayecto_view')
 
 class ActInaTrayectoView(View):
-    template_name = "trayectos/home.html"
+    template_name = "trayectos/trayecto_list.html"
     
     def get(self,request,pk): 
         location = Trayecto.objects.get(pk=pk)
@@ -546,7 +635,7 @@ class ActInaTrayectoView(View):
         location.um = request.user.id
         location.save()
             
-        return redirect('elim:trayecto_view')
+        return redirect('elim:reg_direccion_new')
 
 def rutas(request):
 
