@@ -296,3 +296,35 @@ class DistanceForm(forms.ModelForm):
     class Meta: 
         model = Distances
         exclude = ['created_at', 'edited_at', 'distance_km','duration_mins','duration_traffic_mins']
+        
+
+
+class VehiculoForm(forms.ModelForm):
+    # direccion = forms.CharField(max_length=100, required=True,
+    #                             widget=forms.TextInput(
+    #                                 attrs={'pattern' :"\\S(.*\\S)?" }))
+    # ciudad = forms.CharField(max_length=20,initial='Bogotá', required=True)
+    # pais = forms.CharField(max_length=20,initial='Colombia', required=True)
+    # zipcode = forms.CharField(initial='110110', required=True,max_length=6,
+    #                              widget=forms.TextInput(attrs={'max': "1000000",'min': "1000",'pattern':"[0-9]+" })
+    #                              )
+    class Meta:
+        model = Vehiculo
+        fields = ['tipo','placa','conductor','hora','disponibilidad','mecanico','restaurante','enfermo']
+        # labels = {'direccion':'Dirección','estado':'Estado','zipcode':'Código postal','ciudad':'Ciudad','pais':'Pais','lat':'Latitud','lng':'Longitud','club':'Club'}
+        # widget = {'direccion': forms.TextInput , 'zipcode': forms.NumberInput, }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args,**kwargs)
+        #self.queryset = Trayecto.objects.filter(estado=True)
+        for field in iter(self.fields):
+            self.fields[field].widget.attrs.update({'class':'form-control'})
+        # self.fields['direccion'].widget.attrs['maxlength'] = 80 
+        # self.fields['pais'].widget.attrs['value'] = 'Colombia'
+        # self.fields['ciudad'].widget.attrs['value'] = 'Bogotá'
+        # self.fields['pais'].widget.attrs['readonly'] = 'true'
+        # self.fields['zipcode'].widget.attrs['value'] = '110110'
+        # self.fields['zipcode'].widget.attrs['max_length'] = 6
+        # self.fields['zipcode'].widget.attrs['type'] = 'number'
+        # self.fields['zipcode'].widget.attrs['max'] = '100000'
+

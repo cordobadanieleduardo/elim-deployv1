@@ -1,0 +1,58 @@
+{% extends 'trayectos/base.html' %}
+{% block content %}
+
+<div class="pageholder">
+    <div class="titleholder">     
+        <div class="title text-uppercase"> Vehiculos Elim Logística</div> 
+        <!-- <div class="title"> {% if location %} para {{location.direccion}} ({{label}}) {% endif %}</div>  -->    
+    </div>
+    
+    <div class="linkholder">
+        {% if obj.count == 0 %}
+            <div> Ningun vehiculo disponible </div>
+        {% else %}
+            <table id="ourtable3" class="myTable m-3">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Fecha Modificación</th>
+                        <th>Dirección</th>
+                        <th>Club</th>
+                        <th>Zipcode</th>
+                        <th>Ciudad</th>
+                        <th>Pais</th>
+                        <th>Latitud</th>
+                        <th>Longitud</th>
+                        <th>Geocode</th>
+                        <th>Estado</th>                       
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in obj %}
+                    <tr>
+                        <td> {{item.id}} </td>
+                        <td> {{item.fm|date:"d/m/Y H:i:s"}} </td>
+                        <td> {{item.direccion}} </td>
+                        <td> {{item.club}} </td>
+                        <td> {{item.zipcode}} </td>
+                        <td> {{item.ciudad}} </td>
+                        <td> {{item.pais}} </td>
+                        <td> {{item.lat}} </td>
+                        <td> {{item.lng}} </td>
+                        <!-- <td> {{item.place_id}} </td> -->
+                        <!-- <td> <a href="{% url 'elim:geocoding_view' item.id %}"> Geocode!</a> </td>                        -->
+                        <!-- <td> <a href="{% url 'elim:actina_view' item.id %}"> {% if item.estado %} Desactivar {% else %} Activar {% endif %} </a> </td>                        -->
+                    </tr>
+                    {% endfor%}
+                </tbody>                
+            </table>
+        {% endif %}
+    </div>
+    <div class="linkholder">  
+        <!-- <a href="{% url 'elim:my_distance_view' %}"> Calcular distancias</a>  -->
+    </div>
+    <div class="linkholder">  
+        <!-- <a href="{% url 'elim:my_map_view' %}"> Ir al mapa</a>  -->
+    </div>
+</div>
+{% endblock %}

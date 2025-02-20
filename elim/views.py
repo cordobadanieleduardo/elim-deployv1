@@ -14,7 +14,9 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required, permission_required
 
 from .models import Cliente,Proveedor,Servicio,Vehiculo,Programador,Trayecto,Persona,Museo, Pais, Registro, Locations,Distances
-from .forms import ClienteForm,ProveedorForm, ServicioForm, MuseoForm , RegistroForm, DistanceForm, TrayectoForm
+from .forms import ClienteForm,ProveedorForm,\
+                ServicioForm, MuseoForm , RegistroForm,\
+                DistanceForm, TrayectoForm, VehiculoForm
 
 from bases.views import SinPrivilegios
 from django.views import View
@@ -49,30 +51,7 @@ class VistaBaseEdit(SuccessMessageMixin,SinPrivilegios, \
         return super().form_valid(form) 
 
 
-class VistaDireccionCreate(SuccessMessageMixin,SinPrivilegios, \
-    generic.CreateView):
-    context_object_name = 'obj'
-    success_message="Registro agregado satisfactoriamente"
-
-    def form_valid(self, form):
-        print('*-*-*-*-')
-        form.instance.uc = self.request.user
-        form.instance.direccion = str(form.instance.direccion).strip()
-        print('*-*-*-*-',  form.instance.direccion)        
-        return super().form_valid(form)
-
-class VistaDireccionEdit(SuccessMessageMixin,SinPrivilegios, \
-    generic.UpdateView):
-    context_object_name = 'obj'
-    success_message="Registro actualizado satisfactoriamente"
-    
-    def form_valid(self, form):
-        form.instance.um = self.request.user.id
-        form.instance.direccion = str(form.instance.direccion).strip()
-        return super().form_valid(form) 
-
-
-# Create your views cliente.
+# Bloque views cliente.
 
 class ClienteView(SinPrivilegios, generic.ListView):
     permission_required = "elim.view_cliente"
@@ -80,7 +59,6 @@ class ClienteView(SinPrivilegios, generic.ListView):
     template_name = "elim/cliente_list.html"
     context_object_name = "obj"
     ordering = ['nombre']
-
 
 class ClienteNew(VistaBaseCreate):
     model = Cliente
@@ -91,23 +69,6 @@ class ClienteNew(VistaBaseCreate):
     success_message="Cliente creado satisfactoriamente"
     permission_required="elim.add_cliente"    
 
-    # def form_valid(self, form):
-    #     form.instance.uc = self.request.user
-    #     return super().form_valid(form)
-    
-    # def get(self, request, *args, **kwargs):
-    #     print("sobre escribir get")
-        
-    #     try:
-    #         t = request.GET["t"]
-    #     except:
-    #         t = None
-
-    #     print(t)
-        
-    #     form = self.form_class(initial=self.initial)
-    #     return render(request, self.template_name, {'form': form, 't':t})
-
 class ClienteEdit(VistaBaseEdit):
     permission_required="elim.change_cliente"
     model = Cliente
@@ -116,24 +77,6 @@ class ClienteEdit(VistaBaseEdit):
     form_class = ClienteForm
     success_url = reverse_lazy("elim:cliente_list")
     success_message = "Cliente actualizado satisfactoriamente"
-
-    # def get(self, request, *args, **kwargs):
-    #     print("sobre escribir get en editar")
-
-    #     print(request)
-        
-    #     try:
-    #         t = request.GET["t"]
-    #     except:
-    #         t = None
-
-    #     print(t)
-    #     self.object = self.get_object()
-    #     form_class = self.get_form_class()
-    #     form = self.get_form(form_class)
-    #     context = self.get_context_data(object=self.object, form=form,t=t)
-    #     print(form_class,form,context)
-    #     return self.render_to_response(context)
 
 class ClienteDel(SuccessMessageMixin, SinPrivilegios, generic.DeleteView):
     permission_required="elim.delete_cliente"
@@ -156,7 +99,7 @@ def cliente_inactivar(request,id):
     return HttpResponse("FAIL")
 
 
-# Create your views Trayecto.
+# Bloque views Trayecto.
 
 class TrayectoView(SinPrivilegios, generic.ListView):
     permission_required = "elim.view_trayecto"
@@ -165,52 +108,21 @@ class TrayectoView(SinPrivilegios, generic.ListView):
     context_object_name = "obj"
     ordering = ['-id']
 
-class TrayectoNew(VistaDireccionCreate):
+class TrayectoNew(VistaBaseCreate):
     model=Trayecto
     template_name="trayectos/trayecto_form.html"
     context_object_name="obj"
     form_class=TrayectoForm
     success_url=reverse_lazy("elim:reg_list")
     success_message="Trayecto creado satisfactoriamente"
-    permission_required="elim.add_trayecto" 
+    permission_required="elim.add_trayecto"
     
-    # def get_object(self, queryset = ...):        
-    #     print('oe',self)
-    #     return super().get_object(queryset)
-    def get(self, request, *args, **kwargs):
-        print('/*/*/*/*/',self)
-        print('/*/*/*/*/',request)
-        print('/*/*/*/*/',args)
-        print('/*/*/*/*/',**kwargs)   
-        if request.method == 'GET':
-            print('-++--++-+- metodo get')             
-        return super().get(request, *args, **kwargs)
-    def is_valid(self):
-        print('.......')
-        valid = super().is_valid()
-        if not valid:
-            return False
-        # Custom Logic
-        return True
-    
-    
-    # def form_valid(self, form):
-    #     print('oooooooo', self)
-        
-    #     # form.instance.direccion = str(self.request.obj.direccion).strip()
-        
-    #     return super().form_valid(form)
-    # def is_valid(self):
-    #     valid = super().is_valid()
-    #     print('***,',self)
-    #     print('***valid,',valid)
-    #     if not valid:
-    #         print('invaliado')
-    #         return False
-    #     # Custom Logic
-    #     return True
+    def form_valid(self, form):
+        form.instance.uc = self.request.user
+        form.instance.direccion = str(form.instance.direccion).strip()
+        return super().form_valid(form)
 
-class TrayectoEdit(VistaDireccionEdit):
+class TrayectoEdit(VistaBaseEdit):
     permission_required="elim.change_trayecto"
     model = Trayecto
     template_name = "trayecto/trayecto_form.html"
@@ -218,20 +130,61 @@ class TrayectoEdit(VistaDireccionEdit):
     form_class = TrayectoForm
     success_url = reverse_lazy("elim:reg_direccion_new")
     success_message = "Trayecto actualizado satisfactoriamente"
+    
+    def form_valid(self, form):
+        form.instance.um = self.request.user.id
+        form.instance.direccion = str(form.instance.direccion).strip()
+        return super().form_valid(form)
 
-# @login_required(login_url="/login/")
-# @permission_required("elim.change_trayecto",login_url="/login/")
-# def direccion_inactivar(request,id):
-#     trayecto = Trayecto.objects.filter(pk=id).first()
-#     print('trayecto',trayecto)
-#     if trayecto:
-#         trayecto.estado = not trayecto.estado
-#         trayecto.save()
-#         return redirect('elim:trayecto_list')   
-#     return HttpResponse("FAIL")
+@login_required(login_url="/login/")
+@permission_required("elim.change_trayecto",login_url="/login/")
+def direccion_inactivar(request,id):
+    reg = Trayecto.objects.filter(pk=id).first()
+    if reg:
+        reg.estado = not reg.estado
+        reg.save()
+        return redirect('elim:trayecto_list')   
+    return HttpResponse("FAIL")
 
 
-# Create your views proveedor.
+# Bloque views Vehiculo.
+
+class VehiculoView(SinPrivilegios, generic.ListView):
+    permission_required = "elim.view_vehiculo"
+    model = Vehiculo
+    template_name = "vehiculos/vehiculo_list.html"
+    context_object_name = "obj"
+    ordering = ['placa','conductor']
+
+class VehiculoNew(VistaBaseCreate):
+    model=Vehiculo
+    template_name="vehiculos/vehiculo_form.html"
+    context_object_name="obj"
+    form_class=VehiculoForm
+    success_url=reverse_lazy("elim:vehiculo_list")
+    success_message="Vehiculo creado satisfactoriamente"
+    permission_required="elim.add_vehiculo" 
+
+class VehiculoEdit(VistaBaseEdit):
+    permission_required="elim.change_vehiculo"
+    model = Vehiculo
+    template_name = "vehiculos/vehiculo_form.html"
+    context_object_name = "obj"
+    form_class = VehiculoForm
+    success_url = reverse_lazy("elim:vehiculo_new")
+    success_message = "Vehiculo actualizado satisfactoriamente"
+
+@login_required(login_url="/login/")
+@permission_required("elim.change_vehiculo",login_url="/login/")
+def vehiculo_inactivar(request,id):
+    reg = Vehiculo.objects.filter(pk=id).first()
+    if reg:
+        reg.estado = not reg.estado
+        reg.save()
+        return redirect('elim:vehiculo_list')   
+    return HttpResponse("FAIL")
+
+# Bloque views proveedor.
 
 class ProveedorView(SinPrivilegios, generic.ListView):
     permission_required = "elim.view_proveedor"
@@ -283,15 +236,8 @@ class RegistroView(SuccessMessageMixin, SinPrivilegios, generic.ListView):
     permission_required="elim.view_registro"
     ordering = ['-fecha']
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        #print(context)
-        return context
-    
     def get_queryset(self):        
-        qs = super().get_queryset().filter(estado=True)        
-        # for q in qs:
-        #     print(q.uc,q.id)        
+        qs = super().get_queryset().filter(estado=True)      
         return qs
 
 
@@ -342,7 +288,7 @@ class RegistroEdit(SuccessMessageMixin, SinPrivilegios, generic.UpdateView):
         return context  
     
     def form_valid(self, form):        
-        form.instance.um = self.request.user.id #User.objects.get(pk=self.request.user.id)
+        form.instance.um = self.request.user.id
         return super().form_valid(form)
 
 
@@ -392,7 +338,6 @@ def reg_add_edit(request,id=None):
                 context ['obj'] = registro                        
             
     if request.method == 'POST':
-        print('metodo post')
         reg_form = RegistroForm(request.POST)
         trayecto  = request.POST.get("trayecto")
         cliente = request.POST.get("cliente")
@@ -444,8 +389,7 @@ def reg_add_edit(request,id=None):
                 print(reg_form.errors)
     return render(request,template_name,context)  
 
-
-# Create your views servicios.
+# Bloque views servicios.
 
 class ServicioView(SinPrivilegios, generic.ListView):
     permission_required = "elim.view_servicio"
@@ -454,10 +398,8 @@ class ServicioView(SinPrivilegios, generic.ListView):
     context_object_name = "obj"
 
 def servicio_new(request):
-    name = request.GET.get('')
     placa =  Vehiculo.objects.all(),
-    # if name:
-    #     placa = placa.filter(placa__icontains=name)
+    #placa = placa.filter(placa__icontains=name)
     template_name="elim/servicio_form.html"
     context={
         'form': ServicioForm(),
@@ -466,9 +408,7 @@ def servicio_new(request):
         "cliente" : Cliente.objects.all(),
         "trayecto" : Trayecto.objects.all(),
         "solicitado_por" : Persona.objects.all(),
-
     }
-    print("hiiiiii")
     return render(request, template_name, context)
 
 class ServicioNew(SuccessMessageMixin,SinPrivilegios, generic.CreateView):
@@ -501,7 +441,6 @@ class ServicioNew(SuccessMessageMixin,SinPrivilegios, generic.CreateView):
 
     def form_valid(self, form):        
         form.instance.uc = self.request.user
-        #form.instance.programador = self.request.programador
         return super().form_valid(form)
 
 class ServicioEdit(SuccessMessageMixin, SinPrivilegios, generic.UpdateView):
