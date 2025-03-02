@@ -3,7 +3,7 @@
 <div class="card shadow mb-4">
     <!-- Card Header - Dropdown -->
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-primary">Listado de Vehiculos</h6>
+        <h6 class="m-0 font-weight-bold text-primary">Estado del vehiculo</h6>
         <div class="dropdown no-arrow">
             <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">
@@ -19,29 +19,29 @@
     <!-- Card Body -->
     <div class="card-body">
         <div class="titleholder">
-            <div class="title text-uppercase"> Vehiculos Elim Logística</div>
+            <!-- <div class="title text-uppercase"> Vehiculos Elim Logística</div> -->
             <!-- <div class="title"> {% if location %} para {{location.direccion}} ({{label}}) {% endif %}</div>  -->
         </div>
 
         <!-- Card menu -->
-        <div class="alert alert-info">
+        <!-- <div class="alert alert-info"> -->
             <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_direccion_add_new' %}')" href="#"> Nueva dirección </a> -->
             <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_new' %}')" href="#"> Nuevo servicio</a> -->
-            <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:vehiculo_new' %}')" href="#"> Nuevo
-                vehiculo</a>
-            <a class="btn btn-default" href="{% url 'elim:reg_direccion_new' %}"> Direcciones</a>
+            <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:vehiculo_new' %}')" href="#"> Nuevo vehiculo</a> -->
+            <!-- <a class="btn btn-default" href="{% url 'elim:reg_direccion_new' %}"> Direcciones</a> -->
             <!-- <a class="btn btn-default" href="{% url 'elim:vehiculo_list' %}"> Vehiculos</a>       -->
-        </div>
+        <!-- </div> -->
 
         {% if not obj %}
         <div class="alert alert-info"> Ningun vehiculo disponible </div>
         {% else %}
+        {{obj.lat}}, {{obj.lng}}
         <table class="table table-striped table-hover dt-responsive nowrap">
             <thead>
                 <th>Estado</th>
                 <!-- <th>Acciones</th> -->
-                <th class="all">Acciones</th>
-                <th>Fecha Modificación</th>
+                <!-- <th class="all">Acciones</th> -->
+                <!-- <th>Fecha Modificación</th> -->
                 <th>Hora</th>
                 <th>Tipo</th>
                 <th>Placa</th>
@@ -56,15 +56,15 @@
                 <tr>
                     <td>
                         <a class="btn btn-warning btn-circle" href="#"
-                            onclick="return abrir_modal('{% url 'elim:vehiculo_edit' item.pk %}')">
+                            onclick="return abrir_modal('{% url 'elim:conductor_edit' item.pk %}')">
                             <i class="far fa-edit"></i>
                         </a>
                     </td>
-                    <td> <a href="{% url 'elim:vehiculo_inactivar' item.pk %}"> 
+                    <!-- <td> <a href="{% url 'elim:vehiculo_inactivar' item.pk %}"> 
                             {% if item.estado %} Desactivar {% else %} Activar {% endif %} 
                         </a> 
-                    </td>
-                    <td> {{item.fm|date:"d/m/Y H:i:s"}} </td>
+                    </td> -->
+                    <!-- <td> {{item.fm|date:"d/m/Y H:i:s"}} </td> -->
                     <td> {{item.hora|date:"H:i:s"}} </td>
                     <td> {{item.tipo}} </td>
                     <td> {{item.placa}} </td>
@@ -74,7 +74,7 @@
                     <td> {{item.restaurante|yesno:"Activo,Inactivo"}} </td>
                     <td> {{item.enfermo|yesno:"Activo,Inactivo"}} </td>
                     <!-- <td> <a href="{#% url 'elim:geocoding_view' item.id %#}"> Geocode!</a> </td>                        -->
-                    <td><img src="/static/admin/img/icon-no.svg" alt="False"></td>
+                    <!-- <td><img src="/static/admin/img/icon-no.svg" alt="False"></td> -->
 
                 </tr>
                 {% endfor%}

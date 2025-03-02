@@ -16,14 +16,17 @@ urlpatterns = [
 
     path('vehiculos/',views.VehiculoView.as_view(), name='vehiculo_list'),
     path('vehiculos/new/',views.VehiculoNew.as_view(), name='vehiculo_new'),
-    path('vehiculos/edit/<int:pk>',views.VehiculoEdit.as_view(), name='vehiculo_edit'),
-    path('vehiculos/inactivar/<int:id>',views.vehiculo_inactivar, name='vehiculo_inactivar'),
+    path('vehiculos/edit/<str:pk>',views.VehiculoEdit.as_view(), name='vehiculo_edit'),
+    path('vehiculos/inactivar/<str:pk>',views.vehiculo_inactivar, name='vehiculo_inactivar'),
 
 
     path('proveedores/',views.ProveedorView.as_view(), name='proveedor_list'),
     path('proveedores/new',views.ProveedorNew.as_view(), name='proveedor_new'),
     path('proveedores/edit/<int:pk>',views.ProveedorEdit.as_view(), name='proveedor_edit'),
     path('proveedores/delete/<int:pk>',views.ProveedorDel.as_view(), name='proveedor_del'),
+    
+    path('conductor/',views.ConductorView.as_view(), name='conductor_view'),
+    path('conductor/edit/<str:pk>',views.ConductorEdit.as_view(), name='conductor_edit'),
     
     # path('servicios/',ServicioView.as_view(), name='servicio_list'),
     # path('servicios/new',ServicioNew.as_view(), name='servicio_new'),
@@ -56,6 +59,11 @@ urlpatterns = [
     path('geocoding/<int:pk>', views.GeocodingView.as_view(), name='geocoding_view'),     
     path('distance', views.DistanceView.as_view(), name='my_distance_view'), 
     
+
+    path('gastos/',views.GastoConductorView.as_view(), name='gasto_list'),
+    path('gastos/new',views.GastoConductorNew.as_view(), name='gasto_new'),
+    path('gastos/edit/<int:pk>',views.GastoConductorEdit.as_view(), name='gasto_edit'),
+    path('gastos/detail/<int:pk>',views.GastoConductorDetailView.as_view(), name='gasto_detail'),
     
     path('map', views.MapView.as_view(), name='my_map_view'), 
     path('route', views.route, name="route"),

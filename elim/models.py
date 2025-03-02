@@ -1,76 +1,13 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
+# from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 import uuid
 import datetime
+from bases.models import ClaseModelo #,User
 
-from bases.models import ClaseModelo
-# Create your models here.
-
-class Persona(ClaseModelo):
-    nombre = models.CharField(max_length=50,help_text= "Nombre de la persona")
-    celular = models.CharField(max_length=10,help_text= "Número de celular")
-    
-    def __str__(self):
-        return '{}'.format(self.nombre)
-    
-    def save(self):
-        super(Persona,self).save()
-
-    class Meta:
-        verbose_name_plural = 'Personas'
-
-
-class Cliente(ClaseModelo):
-    nombre = models.CharField(max_length=50,help_text= "Nombre del cliente")
-    
-    def __str__(self):
-        return '{}'.format(self.nombre)
-    
-    def save(self):
-        super(Cliente,self).save()
-
-    class Meta:
-        ordering = ['nombre']
-        verbose_name_plural = 'Clientes'
-
-class Proveedor(ClaseModelo):
-    nombre = models.CharField(max_length=50,help_text= "Nombre del proveedor")
-    
-    def __str__(self):
-        return '{}'.format(self.nombre)
-    
-    def save(self):
-        super(Proveedor,self).save()
-
-    class Meta:
-        verbose_name_plural = 'Proveedores'
-
-class Conductor(ClaseModelo):
-    nombre = models.CharField(max_length=50,help_text= "Nombre del conductor")
-
-    def __str__(self):
-        return '{}'.format(self.nombre)
-    
-    def save(self):
-        super(Conductor,self).save()
-
-    class Meta:
-        ordering = ['nombre']
-        verbose_name_plural = 'Conductores'
-
-class Programador(ClaseModelo):
-    nombre = models.CharField(max_length=50,help_text= "Nombre del programador")
-
-    def __str__(self):
-        return '{}'.format(self.nombre)
-    
-    def save(self):
-        super(Programador,self).save()
-
-    class Meta:
-        verbose_name_plural = 'Programadores'
-
+# Trayecto models.
 class Trayecto(ClaseModelo):
     
     direccion = models.CharField(verbose_name='Dirección',max_length=200)    
@@ -91,6 +28,60 @@ class Trayecto(ClaseModelo):
     class Meta:
         verbose_name_plural = 'Trayectos'
 
+# Create your models here.
+
+class Persona(ClaseModelo):
+    nombre = models.CharField(max_length=50,help_text= "Nombre de la persona")
+    celular = models.CharField(max_length=10,help_text= "Número de celular")
+    
+    def __str__(self):
+        return '{}'.format(self.nombre)
+    
+    def save(self):
+        super(Persona,self).save()
+
+    class Meta:
+        verbose_name_plural = 'Personas'
+
+class Cliente(ClaseModelo):
+    nombre = models.CharField(max_length=50,help_text= "Nombre del cliente")
+    
+    def __str__(self):
+        return '{}'.format(self.nombre)
+    
+    def save(self):
+        super(Cliente,self).save()
+
+    class Meta:
+        ordering = ['nombre']
+        verbose_name_plural = 'Clientes'
+        
+
+class Proveedor(ClaseModelo):
+    nombre = models.CharField(max_length=50,help_text= "Nombre del proveedor")
+    
+    def __str__(self):
+        return '{}'.format(self.nombre)
+    
+    def save(self):
+        super(Proveedor,self).save()
+
+    class Meta:
+        verbose_name_plural = 'Proveedores'
+
+class Conductor(ClaseModelo):
+    cedula = models.BigIntegerField(help_text= "Cédula",blank=True,null=True)
+    nombre = models.CharField(max_length=50,help_text= "Nombre del conductor")
+
+    def __str__(self):
+        return '{}'.format(self.nombre)
+    
+    def save(self):
+        super(Conductor,self).save()
+
+    class Meta:
+        ordering = ['nombre']
+        verbose_name_plural = 'Conductores'
 
 class Vehiculo(ClaseModelo):
     
@@ -106,14 +97,16 @@ class Vehiculo(ClaseModelo):
         MINIVAN = "MINIVAN", _("Minivan")
         CAMION = "CAMION", _("Camion")
     
-    tipo = models.CharField(max_length=10,choices=Tipo,default=Tipo.VAN,help_text= "Tipo de vehiculo")
-    placa = models.CharField(primary_key = True,max_length=6,help_text= "Placa")    
-    conductor = models.ForeignKey(Conductor,on_delete=models.PROTECT,max_length=50,help_text= "Nombre del conductor")    
-    hora = models.DateTimeField(default=datetime.datetime.now(), max_length=20,help_text= "Hora")
-    disponibilidad = models.CharField(max_length=10,choices=Disponibilidad,default=Disponibilidad.INACTIVO,)
+    tipo = models.CharField(max_length=10,choices=Tipo,default=Tipo.VAN)
+    placa = models.CharField(primary_key = True,max_length=6)    
+    conductor = models.ForeignKey(Conductor,on_delete=models.PROTECT,max_length=50)    
+    hora = models.DateTimeField(default=datetime.datetime.now(), max_length=20)
+    disponibilidad = models.CharField(max_length=10,choices=Disponibilidad,default=Disponibilidad.INACTIVO)
     mecanico = models.BooleanField(default=False)
     restaurante = models.BooleanField(default=False)
     enfermo = models.BooleanField(default=False)
+    ubicacion = models.ForeignKey(Trayecto,on_delete=models.RESTRICT,blank=True, null=True)
+
 
     def is_upperclass(self):
         return self.disponibilidad in {
@@ -129,6 +122,20 @@ class Vehiculo(ClaseModelo):
 
     class Meta:
         verbose_name_plural = 'Vehiculos'
+
+
+class Programador(ClaseModelo):
+    nombre = models.CharField(max_length=50,help_text= "Nombre del programador")
+
+    def __str__(self):
+        return '{}'.format(self.nombre)
+    
+    def save(self):
+        super(Programador,self).save()
+
+    class Meta:
+        verbose_name_plural = 'Programadores'
+
 
 class Servicio(ClaseModelo):
     
@@ -212,7 +219,7 @@ class Registro(ClaseModelo):
     medio_pago = models.CharField(max_length=15,choices=Medio_pago,default=Medio_pago.CONTADO)
     valor = models.DecimalField(max_digits=9, decimal_places=2, default=0.0)
     costo = models.DecimalField(max_digits=9, decimal_places=2, default=0.0)
-    neto = models.DecimalField(max_digits=9, decimal_places=2, default=0.0 )
+    neto = models.DecimalField(max_digits=9, decimal_places=2, default=0.0)
     
     def __str__(self):
         return '{}'.format(self.placa)
@@ -252,3 +259,59 @@ class Distances (models.Model):
 
     def __str__(self):
         return self.id
+    
+    
+    
+    
+class PerfilConductor(models.Model):
+    
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return '{}'.format(self.vehiculo)    
+    class Meta:
+        verbose_name_plural = 'Perfil de conductores'
+
+
+
+class GastoConductor(ClaseModelo):    
+    class Concepto(models.TextChoices):
+        GASOLINA = "gasolina", _("Gasolina")
+        PEAJE = "peaje", _("Peajes")
+        OTRO = "otro", _("Otro")
+    
+    class Medio_pago(models.TextChoices):
+        CONTADO = "efectivo", _("Efectivo")
+        CREDITO = "chip", _("Chip")
+
+    numero_registro = models.UUIDField(default=uuid.uuid4,max_length=80)    
+    fecha = models.DateTimeField(default=datetime.datetime.now(),blank=True, null=True)
+    concepto = models.CharField(max_length=15,choices=Concepto,default=Concepto.GASOLINA)
+    medio_pago = models.CharField(max_length=15,choices=Medio_pago,default=Medio_pago.CONTADO)
+    valor = models.DecimalField(max_digits=9,decimal_places=2,max_length=12,
+                                default=0.0,
+        validators=[MaxValueValidator(1000000), MinValueValidator(10000)])
+    
+    # valor = models.IntegerField(validators=[MaxValueValidator(9999999.99)] , max_length=10)
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.RESTRICT)
+    placa = models.CharField(max_length=6)
+    cedula = models.IntegerField()
+    conductor = models.CharField(blank=True,max_length=200)
+    imagen = models.ImageField(upload_to="gastos")
+
+    def __str__(self):
+        return '{}'.format(self.fecha)
+    
+    class Meta:
+        verbose_name_plural = 'Gastos del conductor'
+        
+    def save(self):
+        self.placa = self.placa.upper()
+        return super().save()
+    
+    # def clean(self):
+    #     super().clean()
+    #     if float(self.valor+ ".0f") > float(10000000):
+    #         raise ValidationError({'valor': 'Valor no puede superar 9.999.999.99'})
+

@@ -134,7 +134,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 #api daniel
 #AIzaSyCY6hkF9iElUnh2bOLsZk4vPj9Di3shsA4
-GOOGLE_API_KEY = 'AIzaSyCY6hkF9iElUnh2bOLsZk4vPj9Di3shsA4'
+#AIzaSyCrffkDj2QtP_8iZwMgnxBj4d-89l_zauY
+GOOGLE_API_KEY = 'AIzaSyCrffkDj2QtP_8iZwMgnxBj4d-89l_zauY'
 
 
 # Internationalization

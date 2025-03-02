@@ -1,24 +1,22 @@
 {% load static %}
 <div class="modal-dialog modal-fullscreen-sm-down">
     <div class="modal-content">
-        {% if obj.placa  %}
+        {% if obj.pk  %}
         <!-- <form method="POST" role="form" id="frm" class="form-inline" enctype="multipart/form-data"> -->
-        <form method="POST" role="form" id="frm" class="form-inline" action="{% url 'elim:vehiculo_edit' obj.placa %}" enctype="multipart/form-data">
+        <form method="POST" role="form" id="frm" class="form-inline" action="{% url 'elim:conductor_edit' obj.placa %}" enctype="multipart/form-data">
         {% else %}
         <!-- <form method="POST" role="form" id="frm" class="form-inline" enctype="multipart/form-data"> -->
-        <form method="POST" role="form" id="frm" class="form-inline" action="{% url 'elim:vehiculo_new' %}" enctype="multipart/form-data">
+        <!-- <form method="POST" role="form" id="frm" class="form-inline" action="{% url 'elim:conductor_new' %}" enctype="multipart/form-data"> -->
         {% endif %}
             <div class="col-xl-12 col-md-12 mb-12">
-                {% if obj.placa %}
+                {% if obj.pk %}
                 <div class="card border-left-warning shadow h-100 py-2">
-                {% else %}
-                <div class="card border-left-success shadow h-100 py-2">
                 {% endif %}
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    {% if obj.placa %} Editar {% else %} Nueva {% endif %} Conductores y vehiculos
+                                    {% if obj.pk %} Editar estado conductor {% endif %}
                                 </div>
                                 
                                 {% csrf_token %}
@@ -73,15 +71,8 @@
 
 {% block js_page %}
 <script>
-    // document.getElementById('placa').focus();
     $(function () {
-        // $("#direccion").focus();
-        // $("#direccion").val("{{ obj.direccion }}");
-        // $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
-        // $("#direccion").val("{{ obj.direccion }}").change();
-        // $("#trayecto").val("{{ obj.trayecto }}").change();
-        // $("#placa").val("{{ obj.placa }}").change();
-        // $("#solicitado_por").val("{{ obj.solicitado_por }}").change();
+        $("#hora").focus();
     });
 </script>
 

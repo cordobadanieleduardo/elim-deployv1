@@ -1,6 +1,5 @@
 from django.db import models
-
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 from django_userforeignkey.models.fields import UserForeignKey
 
 
@@ -26,3 +25,6 @@ class ClaseModelo2(models.Model):
 
     class Meta:
         abstract=True
+        
+# class User(AbstractUser):
+#     pass

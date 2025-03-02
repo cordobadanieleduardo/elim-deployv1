@@ -7,9 +7,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin,\
 from django.views import generic
 
 class MixinFormInvalid:
+    # pass
     def form_invalid(self,form):
         response = super().form_invalid(form)
+        print('self',self.request)
         if self.request.is_ajax():
+            print('a')
             return JsonResponse(form.errors, status=400)
         else:
             return response

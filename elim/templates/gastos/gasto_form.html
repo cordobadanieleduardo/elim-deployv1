@@ -1,15 +1,15 @@
-{% load static %}
-<div class="modal-dialog modal-fullscreen-sm-down">
-    <div class="modal-content">
-        {% if obj.placa  %}
-        <!-- <form method="POST" role="form" id="frm" class="form-inline" enctype="multipart/form-data"> -->
-        <form method="POST" role="form" id="frm" class="form-inline" action="{% url 'elim:vehiculo_edit' obj.placa %}" enctype="multipart/form-data">
+{% extends 'base/base.html' %}
+
+{% block page_content %}
+<div class="panel-body">
+    <div>
+        {% if obj.pk  %}
+        <form method="POST" role="form" id="frm" class="form-inline" action="{% url 'elim:gasto_edit' obj.pk %}" enctype="multipart/form-data">
         {% else %}
-        <!-- <form method="POST" role="form" id="frm" class="form-inline" enctype="multipart/form-data"> -->
-        <form method="POST" role="form" id="frm" class="form-inline" action="{% url 'elim:vehiculo_new' %}" enctype="multipart/form-data">
+        <form method="POST" role="form" id="frm" class="form-inline" action="{% url 'elim:gasto_new' %}" enctype="multipart/form-data">
         {% endif %}
             <div class="col-xl-12 col-md-12 mb-12">
-                {% if obj.placa %}
+                {% if obj.pk %}
                 <div class="card border-left-warning shadow h-100 py-2">
                 {% else %}
                 <div class="card border-left-success shadow h-100 py-2">
@@ -18,11 +18,9 @@
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    {% if obj.placa %} Editar {% else %} Nueva {% endif %} Conductores y vehiculos
-                                </div>
-                                
+                                    {% if obj.pk %} Editar gasto del conductor {% endif %}
+                                </div>                                
                                 {% csrf_token %}
-
                                 <small class="text-danger">
                                     {% if form.errors %}
                                         {% for field in form %}
@@ -40,12 +38,24 @@
                                         {% endif %}
                                     {% endif %}
                                 </small>
-
                                 <div class="dropdown-divider"></div>
-
-                                <div class="row">                                    
-                                    {{form.as_div}}                                    
-                                </div>   
+                                <!-- <div class="row"> -->
+                                    <!-- {{form.as_div}} -->
+                                <!-- </div>  --> 
+                                <!-- {{form.fecha.errors}}                                 -->
+                                {{form.fecha.label}}
+                                <input type="datetime" name="fecha" id="fecha" required 
+                                    class="form-control" maxlength="19" autocomplete="off">
+                                    
+                                    {{form.valor.label}}
+                                    <!-- {{form.valor.errors}}  -->
+                                    {{form.valor}} 
+                                    {{form.medio_pago}}
+                                    {{form.concepto}}                                            
+                                    <!-- {{form.placa}} -->
+                                    <!-- {{form.cedula}} -->
+                                    <!-- {{form.conductor}} -->
+                                    {{form.imagen}}
 
                                 <div class="dropdown-divider"></div>
 
@@ -55,10 +65,9 @@
                                             <span class="fa fa-save"></span> 
                                             Guardar
                                         </button>
-                                        <button type="button" class="btn btn-success"
-                                            onclick="return cerrar_modal()">
+                                        <a type="button" class="btn btn-success" href="{% url 'elim:gasto_list' %}">
                                             Cancelar
-                                        </button>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -70,19 +79,23 @@
     </div>
 </div>
 
+{% endblock %}
 
 {% block js_page %}
 <script>
-    // document.getElementById('placa').focus();
+
+    $("#fecha").datetimepicker({
+            format: 'd/m/Y H:i:s',
+            timepicker:true,
+            // minDate:'16/02/2025 00:00:00'    
+    });
+
     $(function () {
-        // $("#direccion").focus();
-        // $("#direccion").val("{{ obj.direccion }}");
-        // $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
-        // $("#direccion").val("{{ obj.direccion }}").change();
-        // $("#trayecto").val("{{ obj.trayecto }}").change();
-        // $("#placa").val("{{ obj.placa }}").change();
-        // $("#solicitado_por").val("{{ obj.solicitado_por }}").change();
+        $("#valor").focus();
+        $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
+        // $("#id_valor").val("{{ obj.valor }}");
     });
 </script>
 
 {% endblock %}
+

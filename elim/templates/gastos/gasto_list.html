@@ -3,7 +3,7 @@
 <div class="card shadow mb-4">
     <!-- Card Header - Dropdown -->
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-primary">Listado de Vehiculos</h6>
+        <h6 class="m-0 font-weight-bold text-primary">Gastos del vehiculo</h6>
         <div class="dropdown no-arrow">
             <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">
@@ -11,7 +11,7 @@
             </a>
             <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
                 <div class="dropdown-header">Acciones:</div>
-                <a class="dropdown-item" onclick="return abrir_modal('{% url 'elim:vehiculo_new' %}')" href="#">
+                <a class="dropdown-item" href="{% url 'elim:gasto_new' %}">
                     <i class="far fa-calendar-plus"></i> Nuevo</a>
             </div>
         </div>
@@ -19,71 +19,77 @@
     <!-- Card Body -->
     <div class="card-body">
         <div class="titleholder">
-            <div class="title text-uppercase"> Vehiculos Elim Logística</div>
+            <!-- <div class="title text-uppercase"> Vehiculos Elim Logística</div> -->
             <!-- <div class="title"> {% if location %} para {{location.direccion}} ({{label}}) {% endif %}</div>  -->
         </div>
 
         <!-- Card menu -->
         <div class="alert alert-info">
-            <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_direccion_add_new' %}')" href="#"> Nueva dirección </a> -->
+            <a class="btn btn-default" href="{% url 'elim:gasto_new' %}" > Registrar gasto </a>
             <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_new' %}')" href="#"> Nuevo servicio</a> -->
-            <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:vehiculo_new' %}')" href="#"> Nuevo
-                vehiculo</a>
-            <a class="btn btn-default" href="{% url 'elim:reg_direccion_new' %}"> Direcciones</a>
+            <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:vehiculo_new' %}')" href="#"> Nuevo vehiculo</a> -->
+            <!-- <a class="btn btn-default" href="{% url 'elim:reg_direccion_new' %}"> Direcciones</a> -->
             <!-- <a class="btn btn-default" href="{% url 'elim:vehiculo_list' %}"> Vehiculos</a>       -->
         </div>
-
         {% if not obj %}
-        <div class="alert alert-info"> Ningun vehiculo disponible </div>
-        {% else %}
+        <div class="alert alert-info"> Ningun gasto conductor disponible </div>
+        {% endif %}
         <table class="table table-striped table-hover dt-responsive nowrap">
             <thead>
-                <th>Estado</th>
-                <!-- <th>Acciones</th> -->
-                <th class="all">Acciones</th>
-                <th>Fecha Modificación</th>
-                <th>Hora</th>
-                <th>Tipo</th>
-                <th>Placa</th>
-                <th>Conductor</th>
-                <th>Disponibilidad</th>
-                <th>Mecanico</th>
-                <th>Restaurante</th>
-                <th>Enfermo</th>
+                <th></th>
+                <!-- <th>Id</th> -->
+                <!-- <th class="all">Acciones</th> -->
+                <!-- <th>Fecha Modificación</th> -->
+                <th>fecha</th>
+                <th>Concepto</th>
+                <th>Medio de pago</th>
+                <th>Valor</th>
+                <!-- <th>Vehiculo</th> -->
+                <!-- <th>Conductor</th> -->
+                <!-- <th>Enfermo</th> -->
             </thead>
             <tbody>
                 {% for item in obj %}
                 <tr>
                     <td>
-                        <a class="btn btn-warning btn-circle" href="#"
-                            onclick="return abrir_modal('{% url 'elim:vehiculo_edit' item.pk %}')">
+                        <a class="btn btn-warning btn-circle" href="{% url 'elim:gasto_edit' item.pk %}">
                             <i class="far fa-edit"></i>
                         </a>
+                        <a href="{{item.imagen.url}}" onclick="return abrir_modal('{% url 'elim:gasto_detail' item.pk %}')">VER</a>
+                        <!-- <a href="{{item.imagen.url}}" >VER2</a> -->
                     </td>
-                    <td> <a href="{% url 'elim:vehiculo_inactivar' item.pk %}"> 
+                    <!-- <td> <a href="{% url 'elim:vehiculo_inactivar' item.pk %}"> 
                             {% if item.estado %} Desactivar {% else %} Activar {% endif %} 
                         </a> 
-                    </td>
-                    <td> {{item.fm|date:"d/m/Y H:i:s"}} </td>
-                    <td> {{item.hora|date:"H:i:s"}} </td>
-                    <td> {{item.tipo}} </td>
-                    <td> {{item.placa}} </td>
-                    <td> {{item.conductor}} </td>
-                    <td> {{item.disponibilidad}} </td>
-                    <td> {{item.mecanico|yesno:"Activo,Inactivo"}} </td>
-                    <td> {{item.restaurante|yesno:"Activo,Inactivo"}} </td>
-                    <td> {{item.enfermo|yesno:"Activo,Inactivo"}} </td>
+                    </td> -->
+                    <!-- <td> {{item.id}} </td> -->
+                    <!-- <td> {{item.fm|date:"d/m/Y H:i:s"}} </td> -->
+                    <!-- <td> {{item.hora|date:"H:i:s"}} </td> -->
+                    <td> {{item.fecha|date:"d/m/Y H:i:s"}} </td>
+                    <td> {{item.concepto}} </td>
+                    <td> {{item.medio_pago}} </td>
+                    <td> {{item.valor}} </td>
+                    <!-- <td> {{item.placa}} </td> -->
+                    <!-- <td> {{item.conductor}} </td> -->
+                    <!-- <td>   </td> -->
+
+                    <!-- <div class="embed-responsive embed-responsive-16by9">
+                        <iframe class="embed-responsive-item" src="..."></iframe>
+                    </div> -->
+
+                    <!-- <td> {{item.mecanico|yesno:"Activo,Inactivo"}} </td> -->
+                    <!-- <td> {{item.restaurante|yesno:"Activo,Inactivo"}} </td> -->
+                    <!-- <td> {{item.enfermo|yesno:"Activo,Inactivo"}} </td> -->
                     <!-- <td> <a href="{#% url 'elim:geocoding_view' item.id %#}"> Geocode!</a> </td>                        -->
-                    <td><img src="/static/admin/img/icon-no.svg" alt="False"></td>
+                    <!-- <td><img src="/static/admin/img/icon-no.svg" alt="False"></td> -->
 
                 </tr>
                 {% endfor%}
             </tbody>
-        </table>
-        {% endif %}
+        </table>        
     </div>
     <div class="linkholder">
-        <a class="btn btn-default" href="{% url 'elim:reg_list' %}"> Registros</a>
+        <a class="btn btn-default" href="{% url 'elim:gasto_list' %}"> Registros</a>
         <!-- <a href="{% url 'elim:my_distance_view' %}"> Calcular distancias</a>  -->
     </div>
     <div class="linkholder">

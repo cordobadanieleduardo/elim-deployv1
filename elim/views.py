@@ -3,9 +3,11 @@ from django.shortcuts import get_object_or_404,render, redirect
 from django.contrib.auth.models import User
 from django.views import generic
 from django.urls import reverse_lazy
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import  DjangoFilterBackend
+from django.http import JsonResponse
+
 from .serializers import MuseoSerializer, PaisSerializer,ClienteSerializer
 
 from django.contrib import messages
@@ -13,16 +15,18 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required, permission_required
 
-from .models import Cliente,Proveedor,Servicio,Vehiculo,Programador,Trayecto,Persona,Museo, Pais, Registro, Locations,Distances
+from .models import Cliente,Proveedor,Servicio,Vehiculo \
+    ,Programador,Trayecto,Persona,Museo, Pais, Registro \
+        , Locations,Distances,PerfilConductor, GastoConductor
 from .forms import ClienteForm,ProveedorForm,\
                 ServicioForm, MuseoForm , RegistroForm,\
-                DistanceForm, TrayectoForm, VehiculoForm
+                DistanceForm, TrayectoForm, VehiculoForm,ConductorForm, GastoConductorForm
 
 from bases.views import SinPrivilegios
 from django.views import View
 from datetime import datetime
 from django.conf import settings
-
+    
 
 import json
 import requests
@@ -32,8 +36,7 @@ import googlemaps
 
 # Create your views base.
 
-class VistaBaseCreate(SuccessMessageMixin,SinPrivilegios, \
-    generic.CreateView):
+class VistaBaseCreate(SuccessMessageMixin,SinPrivilegios, generic.CreateView):
     context_object_name = 'obj'
     success_message="Registro agregado satisfactoriamente"
 
@@ -41,8 +44,7 @@ class VistaBaseCreate(SuccessMessageMixin,SinPrivilegios, \
         form.instance.uc = self.request.user
         return super().form_valid(form)
 
-class VistaBaseEdit(SuccessMessageMixin,SinPrivilegios, \
-    generic.UpdateView):
+class VistaBaseEdit(SuccessMessageMixin,SinPrivilegios, generic.UpdateView):
     context_object_name = 'obj'
     success_message="Registro actualizado satisfactoriamente"
     
@@ -91,16 +93,96 @@ class ClienteDel(SuccessMessageMixin, SinPrivilegios, generic.DeleteView):
 @permission_required("elim.change_cliente",login_url="/login/")
 def cliente_inactivar(request,id):
     cliente = Cliente.objects.filter(pk=id).first()
-    print('cliente',cliente)
     if cliente:
         cliente.estado = not cliente.estado
         cliente.save()
         return redirect('elim:cliente_list')    
     return HttpResponse("FAIL")
 
+# Bloque views Conductor.
+
+class ConductorView(SinPrivilegios, generic.ListView):
+    permission_required = "elim.change_vehiculo"
+    model = Vehiculo
+    template_name = "conductor/conductor_list.html"
+    context_object_name = "obj"
+    
+  
+    def get_queryset(self):                
+        if PerfilConductor.objects.filter(usuario = self.request.user):                 
+            return super().get_queryset().filter(placa=PerfilConductor.objects.get(usuario = self.request.user))
+    
+    def get_context_data(self, **kwargs):
+        
+        print('self.kwargs',self.kwargs)
+        
+        ip = requests.get('https://api.ipify.org?format=json')
+        ip_data = json.loads(ip.text)
+        print(ip_data)
+        res = requests.get('http://ip-api.com/json/'+ip_data['ip'])
+        location_data_one = res.text
+        location_data = json.loads(location_data_one)
+        print(location_data)
+        print(location_data['lon'])
+        # print(location_data.lat)
+        
+        
+        context = super().get_context_data(**kwargs)
+        print('*-*-*-',context)
+        obj=  context["obj"] 
+        obj.lat = location_data['lat']
+        obj.lng = location_data['lon']
+        print('*-*-*-',obj[0] )
+        print('*-*-*-',obj.lat)
+        print('*-*-*-',obj.lng)
+        # print('*-*-*-',obj.id)
+        
+        ubicacion = Vehiculo.objects.get(pk=obj[0]).ubicacion.id 
+        print('ubicacion',ubicacion)
+        if ubicacion:
+            # Trayecto.objects.get(pk=placa)            
+            location = Trayecto.objects.get(pk=ubicacion) 
+        
+            print(location)
+            if not location.lat and not location.lng:
+                print('nul')
+        
+            # if location.direccion and location.ciudad and location.zipcode and location.ciudad != None: 
+            #     direccion_string = str(location.direccion)+", "+str(location.zipcode)+", "+str(location.ciudad)+", "+str(location.pais)
+
+            #     gmaps = googlemaps.Client(key = settings.GOOGLE_API_KEY)
+            #     result = gmaps.geocode(direccion_string)[0]
+                
+            #     location.lat = result.get('geometry', {}).get('location', {}).get('lat', None)
+            #     location.lng = result.get('geometry', {}).get('location', {}).get('lng', None)
+            #     location.place_id = result.get('place_id', {})
+            #     # location.um = self.request.user.id
+            #     location.save()
+            
+            # return redirect('elim:trayecto_view')
+        return context
+        
+        
+        
+   
+       # context[""] = 
+    
+
+class ConductorEdit(VistaBaseEdit):
+    permission_required = "elim.change_vehiculo"
+    model = Vehiculo
+    template_name = "conductor/conductor_form.html"
+    context_object_name = "obj"
+    form_class = ConductorForm
+    success_url = reverse_lazy("elim:conductor_view")
+    success_message = "Conductor actualizado satisfactoriamente"
+    
+    def form_valid(self, form):
+        form.instance.um = self.request.user.id
+        # form.instance.direccion = str(form.instance.direccion).strip()
+        return super().form_valid(form)
 
 # Bloque views Trayecto.
-
 class TrayectoView(SinPrivilegios, generic.ListView):
     permission_required = "elim.view_trayecto"
     model = Trayecto
@@ -121,7 +203,8 @@ class TrayectoNew(VistaBaseCreate):
         form.instance.uc = self.request.user
         form.instance.direccion = str(form.instance.direccion).strip()
         return super().form_valid(form)
-
+    
+    
 class TrayectoEdit(VistaBaseEdit):
     permission_required="elim.change_trayecto"
     model = Trayecto
@@ -171,13 +254,17 @@ class VehiculoEdit(VistaBaseEdit):
     template_name = "vehiculos/vehiculo_form.html"
     context_object_name = "obj"
     form_class = VehiculoForm
-    success_url = reverse_lazy("elim:vehiculo_new")
+    success_url = reverse_lazy("elim:vehiculo_list")
     success_message = "Vehiculo actualizado satisfactoriamente"
+    
+    def form_valid(self, form):
+        # form.instance.uc = self.request.user
+        return super().form_valid(form)
 
 @login_required(login_url="/login/")
 @permission_required("elim.change_vehiculo",login_url="/login/")
-def vehiculo_inactivar(request,id):
-    reg = Vehiculo.objects.filter(pk=id).first()
+def vehiculo_inactivar(request,pk):
+    reg = Vehiculo.objects.filter(pk=pk).first()
     if reg:
         reg.estado = not reg.estado
         reg.save()
@@ -410,7 +497,6 @@ def servicio_new(request):
         "solicitado_por" : Persona.objects.all(),
     }
     return render(request, template_name, context)
-
 class ServicioNew(SuccessMessageMixin,SinPrivilegios, generic.CreateView):
     permission_required="elim.add_servicio"
     model = Servicio
@@ -442,7 +528,6 @@ class ServicioNew(SuccessMessageMixin,SinPrivilegios, generic.CreateView):
     def form_valid(self, form):        
         form.instance.uc = self.request.user
         return super().form_valid(form)
-
 class ServicioEdit(SuccessMessageMixin, SinPrivilegios, generic.UpdateView):
     permission_required="elim.change_servicio"
     model = Servicio
@@ -455,7 +540,7 @@ class ServicioEdit(SuccessMessageMixin, SinPrivilegios, generic.UpdateView):
     def get_object(self):
         obj = super().get_object()
         # Record the last fecha modificacion date
-        obj.fm = timezone.now()
+        # obj.fm = timezone.now()
         obj.save()
         return obj
     
@@ -474,7 +559,6 @@ class ServicioEdit(SuccessMessageMixin, SinPrivilegios, generic.UpdateView):
         form.instance.um = self.request.user.id
         print('***',form)
         return super().form_valid(form)
-
 class ServicioDel(SuccessMessageMixin, SinPrivilegios, generic.DeleteView):
     permission_required="elim.delete_servicio"
     model = Servicio
@@ -482,7 +566,6 @@ class ServicioDel(SuccessMessageMixin, SinPrivilegios, generic.DeleteView):
     context_object_name ='obj'
     success_url = reverse_lazy("elim:servicio_list")
     success_message="Servicio eliminado satisfactoriamente"
-
 class MuseoCreateView(generic.CreateView):
     model = Museo
     template_name = "elim/add.html"
@@ -493,7 +576,6 @@ class MuseoCreateView(generic.CreateView):
     #     self.pais = get_object_or_404(Pais, name=self.kwargs["pais"])
     #     return
     # Pais.objects.filter(nombre=self.nombre)
-
 
 def index(request):
     return render(request, "museo/index.html")
@@ -506,10 +588,11 @@ def index_js(request):
 def localizacion(request):
     ip = requests.get('https://api.ipify.org?format=json')
     ip_data = json.loads(ip.text)
+    print(ip_data)
     res = requests.get('http://ip-api.com/json/'+ip_data['ip'])
     location_data_one = res.text
     location_data = json.loads(location_data_one)
-    
+    print(location_data)
     return render(request, "geo/geo.html", {'data':location_data})
 
 
@@ -588,7 +671,7 @@ class MapView(View):
 
     def get(self,request): 
         key = settings.GOOGLE_API_KEY
-        eligable_locations = Locations.objects.filter(place_id__isnull=False)
+        eligable_locations = Trayecto.objects.filter(place_id__isnull=False)
         locations = []
 
         for a in eligable_locations: 
@@ -676,3 +759,83 @@ def route(request):
 	"google_api_key": settings.GOOGLE_API_KEY,
 	"base_country": settings.BASE_COUNTRY}
 	return render(request, 'trayectos/route.html', context)
+
+
+class GastoConductorDetailView(SinPrivilegios, generic.DetailView):
+    permission_required = "elim.view_gastoconductor"
+    model = GastoConductor
+    template_name = "gastos/gasto_detail.html"
+    context_object_name = "obj"
+
+class GastoConductorView(SinPrivilegios, generic.ListView):
+    permission_required = "elim.view_gastoconductor"
+    model = GastoConductor
+    template_name = "gastos/gasto_list.html"
+    context_object_name = "obj"
+    ordering = ['-id']
+    
+    def get_queryset(self):                
+        if PerfilConductor.objects.filter(usuario = self.request.user):                 
+            return super().get_queryset().filter(placa=PerfilConductor.objects.get(usuario = self.request.user))
+
+class GastoConductorNew(VistaBaseCreate):
+    model=GastoConductor
+    template_name="gastos/gasto_form.html"
+    context_object_name="obj"
+    form_class=GastoConductorForm
+    success_url=reverse_lazy("elim:gasto_list")
+    success_message="Gasto creado satisfactoriamente"
+    permission_required="elim.add_gastoconductor"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        registro = GastoConductor
+        registro.fecha = datetime.now
+        context ['obj'] = registro
+        return context
+    
+    def form_invalid(self, form, **kwargs):
+        context = super().get_context_data(**kwargs)
+        registro = GastoConductor
+        if self.request.POST:
+            form = GastoConductorForm(self.request.POST, self.request.FILES)
+            registro.fecha = self.request.POST.get('fecha')
+            registro.valor = self.request.POST.get('valor')
+        context ['obj'] = registro
+        context ['form'] = form
+        return render(self.request, self.template_name, context)
+    
+    def form_valid(self, form):
+        form.instance.uc = self.request.user
+        if PerfilConductor.objects.filter(usuario = self.request.user):
+            perfil = PerfilConductor.objects.get(usuario = self.request.user)
+            vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo_id)
+            form.instance.vehiculo = vehiculo
+            form.instance.placa = perfil.vehiculo_id
+            form.instance.cedula = vehiculo.conductor.cedula
+            form.instance.conductor = vehiculo.conductor.nombre
+        return super().form_valid(form)
+    
+class GastoConductorEdit(VistaBaseEdit):
+    permission_required="elim.change_gastoconductor"
+    model = GastoConductor
+    template_name = "gastos/gasto_form.html"
+    context_object_name = "obj"
+    form_class = GastoConductorForm
+    success_url = reverse_lazy("elim:gasto_list")
+    success_message = "Gasto actualizado satisfactoriamente"
+    
+    def form_invalid(self, form,  **kwargs):
+        context = super().get_context_data(**kwargs)
+        return render(self.request, self.template_name, context)
+
+    def form_valid(self, form):
+        form.instance.um = self.request.user.id
+        if PerfilConductor.objects.filter(usuario = self.request.user):
+            perfil = PerfilConductor.objects.get(usuario = self.request.user)
+            vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo_id)
+            form.instance.vehiculo = vehiculo
+            form.instance.placa = perfil.vehiculo_id
+            form.instance.cedula = vehiculo.conductor.cedula
+            form.instance.conductor = vehiculo.conductor.nombre
+        return super().form_valid(form)

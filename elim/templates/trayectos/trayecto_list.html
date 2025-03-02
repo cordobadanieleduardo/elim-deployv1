@@ -6,6 +6,10 @@
         <div class="title text-uppercase"> Direcciones Elim Logística</div> 
         <!-- <div class="title"> {% if location %} para {{location.direccion}} ({{label}}) {% endif %}</div>  -->    
     </div>
+
+    <div class="linkholder">  
+        <a class="btn btn-default" href="{% url 'elim:reg_list' %}"> Registros</a>
+    </div>
     
     <div class="linkholder">
         {% if obj.count == 0 %}
@@ -27,9 +31,7 @@
                         <th>Estado</th>                       
                     </tr>
                 </thead>
-                <tbody>
-                
-
+                <tbody>            
                     {% for item in obj %}
                     <tr>
                         <td> {{item.id}} </td>
@@ -58,4 +60,37 @@
         <a href="{% url 'elim:my_map_view' %}"> Ir al mapa</a> 
     </div>
 </div>
+{% endblock %}
+{% block js_page %}
+<script>
+    // Call the dataTables jQuery plugin
+    $(document).ready(function () {
+        $('.table').DataTable({
+            "language": {
+                "sProcessing": "Procesando...",
+                "sLengthMenu": "Mostrar _MENU_ registros",
+                "sZeroRecords": "No se encontraron resultados",
+                "sEmptyTable": "Ningún dato disponible en esta tabla",
+                "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                "sInfoPostFix": "",
+                "sSearch": "Buscar:",
+                "sUrl": "",
+                "sInfoThousands": ",",
+                "sLoadingRecords": "Cargando...",
+                "oPaginate": {
+                    "sFirst": "<span class='fa fa-angle-double-left'></span>",
+                    "sLast": "<span class='fa fa-angle-double-right'></span>",
+                    "sNext": "<span class='fa fa-angle-right'></span>",
+                    "sPrevious": "<span class='fa fa-angle-left'></span>"
+                },
+                "oAria": {
+                    "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                    "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

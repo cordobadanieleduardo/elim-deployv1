@@ -1,0 +1,11 @@
+{% extends 'base/base.html' %}
+{% block page_content %}
+  <h1>Registrar dirección</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button type="submit">Registrar</button>
+  </form>
+
+  placa_ :  {{obj.placa}}
+{% endblock page_content %}
