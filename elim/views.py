@@ -346,7 +346,8 @@ class RegistroNew(SuccessMessageMixin,SinPrivilegios, generic.CreateView):
         context["clientes"] = Cliente.objects.all()
         context["trayectos"] = Trayecto.objects.filter(estado=True)    
         context["placas"] = Vehiculo.objects.all()
-        context["solicitados_por"] = Persona.objects.all()        
+        context["solicitados_por"] = Persona.objects.all() 
+        context["obj"] = Registro 
         return context    
 
     def form_valid(self, form):
@@ -383,78 +384,22 @@ class RegistroEdit(SuccessMessageMixin, SinPrivilegios, generic.UpdateView):
 @login_required(login_url='/login/')
 @permission_required('elim.change_registro', login_url='bases:sin_privilegios')
 def reg_add_edit(request,id=None):
-    
     print('id---',id)
-    #datetime.strptime(reg.fecha, '%d/%m/%Y %H:%i:%S'), #, datetime.date.isoformat(reg.fecha),
-    context={
-        'form': RegistroForm(),
-        'clientes':Cliente.objects.filter(estado=True),
-        'trayectos':Trayecto.objects.filter(estado=True), 
-        'placas':Vehiculo.objects.filter(estado=True),
-        'solicitados_por':Persona.objects.filter(estado=True),                
-        'obj':{},
-        'google_api_key' : settings.GOOGLE_API_KEY,
-        'base_country':settings.BASE_COUNTRY
-    }
-    
-    registro = {'fecha': datetime.now()}
-    context ['obj'] = registro                        
+    ip_cliente = request.META.get('REMOTE_ADDR', 'IP no disponible')
+    print('cliente ip', ip_cliente)
     template_name = 'elim/reg_form.html'
-
-    if request.method == 'GET':
-        if id:
-            reg = Registro.objects.filter(pk=id).first()
-            if reg:                      
-                registro = {
-                    'id':reg.id,
-                    'fecha': reg.fecha, 
-                    'cliente':reg.cliente.id,                    
-                    'placa':reg.placa,
-                    'trayecto': reg.trayecto.id,
-                    'solicitado_por':reg.solicitado_por.id,
-                    'celular':reg.celular,
-                    'medio_pago':reg.medio_pago,
-                    'valor':reg.valor,
-                    'costo':reg.costo,
-                    'neto':reg.neto,
-                    'um':reg.um,
-                    'uc':reg.uc,
-                }
-
-                context ['form'] = RegistroForm(registro)
-                context ['obj'] = registro                        
-            
+    reg = Registro
+    reg_form = RegistroForm
     if request.method == 'POST':
         reg_form = RegistroForm(request.POST)
         trayecto  = request.POST.get("trayecto")
         cliente = request.POST.get("cliente")
         placa = request.POST.get("placa")
-        solicitado_por  = request.POST.get("solicitado_por")                
-        reg = Registro.objects.filter(pk=id).first()
-        registro = Registro()        
-        if not id:
-            registro = Registro (
-                uc = User.objects.get(pk=request.user.id),                
-                trayecto = Trayecto.objects.get(pk=trayecto),
-                cliente = Cliente.objects.get(pk=cliente),
-                placa = Vehiculo.objects.get(pk=placa),
-                solicitado_por = Persona.objects.get(pk=solicitado_por),
-                celular = request.POST.get("celular"),
-                medio_pago = request.POST.get("medio_pago"),
-                valor = request.POST.get("valor"),
-                costo = request.POST.get("costo"),
-                neto = request.POST.get("neto"), 
-            )
-            context ['obj'] = registro  
-            if reg_form.is_valid():
-                registro.save()
-                messages.success(request,'Servicio creado')
-                return redirect('elim:reg_list')
-            else:
-                messages.error(request, reg_form.errors)
-        else:
+        solicitado_por  = request.POST.get("solicitado_por")   
+        if id:            
+            reg = Registro.objects.get(pk=id)
             reg.um = request.user.id
-            reg.fecha = datetime.strptime(request.POST.get("fecha") , '%d/%m/%Y %H:%M:%S')
+            reg.fecha = datetime.strptime(request.POST.get("fecha"),'%d/%m/%Y %H:%M:%S')
             reg.trayecto = Trayecto.objects.get(pk=trayecto)
             reg.cliente = Cliente.objects.get(pk=cliente)
             reg.solicitado_por = Persona.objects.get(pk=solicitado_por)
@@ -462,18 +407,58 @@ def reg_add_edit(request,id=None):
             reg.celular = request.POST.get("celular")
             reg.medio_pago = request.POST.get("medio_pago")
             reg.valor = request.POST.get("valor")
-            reg.costo = request.POST.get("costo")
-            reg.neto = request.POST.get("neto")     
+            reg.direccion = request.POST.get("direccion")
+            reg.latitud = request.POST.get("latitud")
+            reg.longitud = request.POST.get("longitud")
+        else:
+            reg =  Registro (
+                uc = request.user,            
+                fecha = datetime.strptime(request.POST.get("fecha"), '%d/%m/%Y %H:%M:%S'),
+                trayecto = Trayecto.objects.get(pk=trayecto),
+                cliente = Cliente.objects.get(pk=cliente),
+                solicitado_por = Persona.objects.get(pk=solicitado_por),
+                placa = Vehiculo.objects.get(pk=placa),
+                celular = request.POST.get("celular"),
+                medio_pago = request.POST.get("medio_pago"),
+                valor = request.POST.get("valor"),
+                direccion = request.POST.get("direccion"),
+                latitud = request.POST.get("latitud"),
+                longitud = request.POST.get("longitud"),
+            )
+        if reg_form.is_valid():
+            reg.save()
+            messages.success(request,'Servicio actualizado')
+            return redirect('elim:reg_list')
+        else:
+            print(reg_form.errors)
+    elif id:
+        reg= Registro.objects.get(pk=id)
+        reg = {
+            'id':reg.id,
+            'fecha':reg.fecha,
+            'trayecto':reg.trayecto,
+            'cliente':reg.cliente,
+            'placa':reg.placa,
+            'solicitado_por':reg.solicitado_por, 
+            'celular':reg.celular,
+            'medio_pago':reg.medio_pago,
+            'valor':reg.valor,
+            'direccion':reg.direccion,
+            'latitud':reg.latitud,
+            'longitud':reg.longitud,        
+        }
+        reg_form = RegistroForm(reg)
+    context={
+        'form':reg_form,
+        'obj':reg,
+        'clientes':Cliente.objects.filter(estado=True),
+        'trayectos':Trayecto.objects.filter(estado=True), 
+        'placas':Vehiculo.objects.filter(estado=True),
+        'solicitados_por':Persona.objects.filter(estado=True),                
+        'google_api_key':settings.GOOGLE_API_KEY,
+        'base_country':settings.BASE_COUNTRY
+    }
     
-            context ['form']  = RegistroForm(instance=registro)
-            context ['obj']  = reg
-        
-            if reg_form.is_valid():
-                reg.save()
-                messages.success(request,'Servicio actualizado')
-                return redirect('elim:reg_list')
-            else:
-                print(reg_form.errors)
     return render(request,template_name,context)  
 
 # Bloque views servicios.
@@ -787,6 +772,7 @@ class GastoConductorNew(VistaBaseCreate):
     success_message="Gasto creado satisfactoriamente"
     permission_required="elim.add_gastoconductor"
 
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         registro = GastoConductor
@@ -816,6 +802,8 @@ class GastoConductorNew(VistaBaseCreate):
             form.instance.conductor = vehiculo.conductor.nombre
         return super().form_valid(form)
     
+    
+    
 class GastoConductorEdit(VistaBaseEdit):
     permission_required="elim.change_gastoconductor"
     model = GastoConductor
@@ -824,6 +812,22 @@ class GastoConductorEdit(VistaBaseEdit):
     form_class = GastoConductorForm
     success_url = reverse_lazy("elim:gasto_list")
     success_message = "Gasto actualizado satisfactoriamente"
+    
+    def get(self, request, pk):
+        try:
+            reg = GastoConductor.objects.get(id=pk)
+            form = GastoConductorForm (instance=reg)            
+            context = {
+                'form': form,
+                'obj': reg
+            }
+            return render(request, self.template_name, context)
+        except GastoConductor.DoesNotExist:
+            return JsonResponse({'error': 'Gasto del conductor no encontrado'}, status=404)
+        except Exception as e:
+            # Log the error here
+            return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
+    
     
     def form_invalid(self, form,  **kwargs):
         context = super().get_context_data(**kwargs)
@@ -839,3 +843,31 @@ class GastoConductorEdit(VistaBaseEdit):
             form.instance.cedula = vehiculo.conductor.cedula
             form.instance.conductor = vehiculo.conductor.nombre
         return super().form_valid(form)
+
+
+
+
+# from django.http import JsonResponse
+# from .models import Book
+
+# def book_detail(request, book_id):
+#     book = get_object_or_404(Book, id=book_id)
+#     return JsonResponse({
+#         'title': book.title,
+#         'author': book.author,
+#         'published_date': book.published_date
+#     })
+
+# def book_detail(request, book_id):
+#     try:
+#         book = Book.objects.get(id=book_id)
+#         return JsonResponse({
+#             'title': book.title,
+#             'author': book.author,
+#             'published_date': book.published_date
+#         })
+#     except Book.DoesNotExist:
+#         return JsonResponse({'error': 'Book not found'}, status=404)
+#     except Exception as e:
+#         # Log the error here
+#         return JsonResponse({'error': 'An unexpected error occurred'}, status=500)

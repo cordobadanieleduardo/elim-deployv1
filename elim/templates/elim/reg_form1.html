@@ -1,0 +1,246 @@
+{% extends 'base/base.html' %}
+
+{% block page_content %}
+<div class="panel-body">
+    <div>
+        {% if obj.id %}
+        <form method="POST" role="form" id="frmReg" class="form-inline" action="{% url 'elim:reg_edit' obj.id %}" enctype="multipart/form-data">
+        {% else %}
+        <form method="POST" role="form" id="frmReg" class="form-inline" action="{% url 'elim:reg_new' %}" enctype="multipart/form-data">
+        {% endif %}
+            <div class="col-xl-12 col-md-12 mb-12">
+                {% if obj.pk %}
+                <div class="card border-left-warning shadow h-100 py-2">
+                {% else %}
+                <div class="card border-left-success shadow h-100 py-2">
+                {% endif %}
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    {% if obj.id %} Editar {% else %} Nuevo {% endif %} Registro
+                                </div>
+                                {% csrf_token %}
+
+                                <small class="text-danger">
+                                    {% if form.errors %}
+                                        {% for field in form %}
+                                            {% if field.errors %}
+                                                {% for error in field.errors %}
+                                                    {{ error|escape }}
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    
+                                        {% if form.non_field_errors%}
+                                            {% for error in form.non_field_errors %}
+                                                {{ error|escape }}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                                </small>
+
+                                <div class="dropdown-divider"></div>
+
+                                <div>
+                                    {{form.as_div}} 
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            <!-- {{obj.fecha.label}} -->
+                                            <!-- {{obj.fecha}} -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            <!-- Cliente
+                                            {{ obj.cliente }} -->
+                                        </div>                    
+                                    </div>
+                                </div>
+
+                    
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            <!-- Dirección
+                                            {{obj.trayecto}} -->
+                                        </div>
+                                     </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-12">
+                                            <!-- Solicitado por
+                                            {{obj.solicitado_por}} -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            <!-- Vehiculo
+                                            {{obj.placa}}  -->
+                                        </div> 
+                                    </div>
+                                </div>
+
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            <!-- Celular -->
+                                        </div>  
+                                        <div class="col-md-12">                                        
+                                            <!-- {{obj.celular}}  -->
+                                        </div>                          
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-12">
+                                            <!-- Medio de pago: -->
+                                        </div>  
+                                        <div class="col-md-12">
+                                            <!-- {{obj.medio_pago}}                                           -->
+                                        </div>                          
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            <!-- Valor: -->
+                                        </div>  
+                                        <div class="col-md-12">
+                                            <!-- {{obj.valor}}                                           -->
+                                        </div>                          
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            <!-- Costo: -->
+                                        </div>  
+                                        <div class="col-md-12">
+                                            <!-- {{obj.costo}}                                           -->
+                                        </div>                          
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            <!-- Neto: -->
+                                        </div>  
+                                        <div class="col-md-12">
+                                            <!-- {{obj.neto}}                                           -->
+                                        </div>                          
+                                    </div>
+                                </div>
+
+                                <div class="dropdown-divider"></div>
+                                <div class="row">
+                                    <div class="col">
+                                        <button type="submit" class="btn btn-danger">
+                                            <span class="fa fa-save"></span> Guardar
+                                        </button>
+                                        <a type="button" class="btn btn-success"
+                                            href="{% url 'elim:reg_list' %}">
+                                            Cancelar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js_page %}
+<script>
+
+    $("#fecha").datetimepicker({
+            format: 'dd/mm/YYYY',
+            timepicker:true,    
+    });
+
+    $('#cliente').select2({
+            placeholder: "Seleccione cliente",
+            allowClear: true
+    });
+
+    $('#trayecto').select2({
+            placeholder: "Seleccione trayecto",
+            allowClear: true
+    });
+
+    $('#placa').select2({
+            placeholder: "Seleccione placa",
+            allowClear: true
+    });
+
+    $('#solicitado_por').select2({
+            placeholder: "Seleccione persona",
+            allowClear: true
+    });
+
+    $('#valor').change(function(){
+        console.log('cambio valor****')
+        calcular();
+    });
+
+
+    $(function () {
+        //$("#fecha").focus();
+        $("#id").val("{{ registro.id }}");
+        // $("#fecha").val("{{ registro.fecha|date:'Y-m-d' }}");
+        $("#cliente").val("{{ registro.cliente }}").change();
+        $("#trayecto").val("{{ registro.trayecto }}").change();
+        $("#placa").val("{{ registro.placa }}").change();
+        $("#solicitado_por").val("{{ registro.solicitado_por }}").change();
+        // $("#valor").val("{{ registro.valor }}");
+        // $("#costo").val("{{ registro.costo }}");
+        // $("#neto").val("{{ registro.neto }}");
+
+        // console.log('valor ',$("#valor").val()) 
+        // console.log('costo ',$("#costo").val()) 
+        // console.log('neto ',$("#neto").val()) 
+    });
+
+
+    function calcular(){
+        var cant,prec,desc,stotal,total;
+        cant = $("#valor").val();
+        console.log('valor',$("#valor").val()) 
+        $('#costo').val(cant);
+        $('#neto').val(prec);
+    }
+
+    function clear(){
+        $('#valor').val(0);
+        $('#costo').val(0);
+        $('#neto').val(0);
+        $("#fecha").focus();
+    }
+
+
+
+</script>
+
+{% endblock %}

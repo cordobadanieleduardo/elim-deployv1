@@ -1,13 +1,15 @@
-{% load static %}
-<div class="modal-dialog modal-fullscreen-sm-down">
-    <div class="modal-content">
-        {% if obj %}
+{% extends 'base/base.html' %}
+
+{% block page_content %}
+<div class="panel-body">
+    <div>
+        {% if obj.id  %}
         <form method="POST" role="form" id="frmReg" class="form-inline" action="{% url 'elim:reg_edit' obj.id %}" enctype="multipart/form-data">
         {% else %}
         <form method="POST" role="form" id="frmReg" class="form-inline" action="{% url 'elim:reg_new' %}" enctype="multipart/form-data">
         {% endif %}
             <div class="col-xl-12 col-md-12 mb-12">
-                {% if obj %}
+                {% if obj.id %}
                 <div class="card border-left-warning shadow h-100 py-2">
                 {% else %}
                 <div class="card border-left-success shadow h-100 py-2">
@@ -40,65 +42,85 @@
 
                                 <div class="dropdown-divider"></div>
 
-                                <div>
-                                    {{form.as_div}} 
-                                </div>
-                                
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="col-md-6">
-                                            <!-- {{obj.fecha.label}} -->
-                                            <!-- {{obj.fecha}} -->
+                                            Fecha
                                         </div>
+                                        <div class="col-md-12">                                        
+                                            <input type="datetime" name="fecha" id="fecha" 
+                                            class="form-control" maxlength="19" autocomplete="off">
+                                        </div>                          
+                                    </div>
+                                </div>                                
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            Dirección
+                                        </div>
+                                        <div class="col-md-12">                                        
+                                            <select name="trayecto" id="trayecto" class="form-control" required>
+                                                {% for item in trayectos %}
+                                                    <option value="{{item.id}}">{{ item.direccion }} </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>                          
                                     </div>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="col-md-6">
-                                            <!-- Cliente
-                                            {{ obj.cliente }} -->
-                                        </div>                    
-                                    </div>
-                                </div>
-
-                    
 
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="col-md-6">
-                                            <!-- Dirección
-                                            {{obj.trayecto}} -->
+                                            Cliente
                                         </div>
-                                     </div>
+                                        <div class="col-md-12">                                        
+                                            <select name="cliente" id="cliente" required>
+                                                {% for item in clientes %}
+                                                    <option value="{{item.id}}">{{ item.nombre }} </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>                          
+                                    </div>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="col-md-12">
-                                            <!-- Solicitado por
-                                            {{obj.solicitado_por}} -->
+                                            Solicitado por
                                         </div>
+                                        <div class="col-md-12">                                        
+                                            <select name="solicitado_por" id="solicitado_por" class="form-control" required>
+                                                {% for item in solicitados_por %}
+                                                    <option value="{{item.id}}">{{ item.nombre }} </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>                          
                                     </div>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="col-md-6">
-                                            <!-- Vehiculo
-                                            {{obj.placa}}  -->
+                                            Vehiculo
                                         </div> 
+                                        <div class="col-md-12">                                        
+                                            <select name="placa" id="placa" class="form-control" required>
+                                                {% for item in placas %}
+                                                    <option value="{{item.placa}}">{{ item.placa }} </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>                          
                                     </div>
                                 </div>
-
-
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="col-md-6">
-                                            <!-- Celular -->
+                                            Celular
                                         </div>  
                                         <div class="col-md-12">                                        
-                                            <!-- {{obj.celular}}  -->
+                                            {{form.celular}} 
                                         </div>                          
                                     </div>
                                 </div>
@@ -106,21 +128,10 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="col-md-12">
-                                            <!-- Medio de pago: -->
+                                            Medio de pago:
                                         </div>  
                                         <div class="col-md-12">
-                                            <!-- {{obj.medio_pago}}                                           -->
-                                        </div>                          
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="col-md-6">
-                                            <!-- Valor: -->
-                                        </div>  
-                                        <div class="col-md-12">
-                                            <!-- {{obj.valor}}                                           -->
+                                            {{form.medio_pago}}                                          
                                         </div>                          
                                     </div>
                                 </div>
@@ -128,10 +139,21 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="col-md-6">
-                                            <!-- Costo: -->
+                                            Valor:
                                         </div>  
                                         <div class="col-md-12">
-                                            <!-- {{obj.costo}}                                           -->
+                                            {{form.valor}}                                          
+                                        </div>                          
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            Costo:
+                                        </div>  
+                                        <div class="col-md-12">
+                                            {{form.costo}}                                          
                                         </div>                          
                                     </div>
                                 </div>
@@ -139,13 +161,14 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="col-md-6">
-                                            <!-- Neto: -->
+                                            Neto:
                                         </div>  
                                         <div class="col-md-12">
-                                            <!-- {{obj.neto}}                                           -->
+                                            {{form.neto}}                                          
                                         </div>                          
                                     </div>
                                 </div>
+                                
 
                                 <div class="dropdown-divider"></div>
                                 <div class="row">
@@ -167,14 +190,15 @@
         </form>
     </div>
 </div>
-
+{% endblock %}
 
 {% block js_page %}
 <script>
 
     $("#fecha").datetimepicker({
-            format: 'dd/mm/YYYY',
-            timepicker:true,    
+            format: 'd/m/Y H:i:s',
+            timepicker:true,
+            minDate:'16/02/2025 00:00:00'    
     });
 
     $('#cliente').select2({
@@ -204,20 +228,14 @@
 
 
     $(function () {
-        //$("#fecha").focus();
-        $("#id").val("{{ registro.id }}");
-        // $("#fecha").val("{{ registro.fecha|date:'Y-m-d' }}");
-        $("#cliente").val("{{ registro.cliente }}").change();
-        $("#trayecto").val("{{ registro.trayecto }}").change();
-        $("#placa").val("{{ registro.placa }}").change();
-        $("#solicitado_por").val("{{ registro.solicitado_por }}").change();
-        // $("#valor").val("{{ registro.valor }}");
-        // $("#costo").val("{{ registro.costo }}");
-        // $("#neto").val("{{ registro.neto }}");
+        // $("#fecha").focus();
+        // $("#id").val("{{ obj.id }}");
+        $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
+        $("#cliente").val("{{ obj.cliente }}").change();
+        $("#trayecto").val("{{ obj.trayecto }}").change();
+        $("#placa").val("{{ obj.placa }}").change();
+        $("#solicitado_por").val("{{ obj.solicitado_por }}").change();
 
-        // console.log('valor ',$("#valor").val()) 
-        // console.log('costo ',$("#costo").val()) 
-        // console.log('neto ',$("#neto").val()) 
     });
 
 
@@ -235,8 +253,6 @@
         $('#neto').val(0);
         $("#fecha").focus();
     }
-
-
 
 </script>
 

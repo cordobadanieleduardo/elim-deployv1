@@ -39,26 +39,14 @@
                                     {% endif %}
                                 </small>
                                 <div class="dropdown-divider"></div>
-                                <!-- <div class="row"> -->
-                                    <!-- {{form.as_div}} -->
-                                <!-- </div>  --> 
-                                <!-- {{form.fecha.errors}}                                 -->
                                 {{form.fecha.label}}
-                                <input type="datetime" name="fecha" id="fecha" required 
-                                    class="form-control" maxlength="19" autocomplete="off">
-                                    
-                                    {{form.valor.label}}
-                                    <!-- {{form.valor.errors}}  -->
-                                    {{form.valor}} 
-                                    {{form.medio_pago}}
-                                    {{form.concepto}}                                            
-                                    <!-- {{form.placa}} -->
-                                    <!-- {{form.cedula}} -->
-                                    <!-- {{form.conductor}} -->
-                                    {{form.imagen}}
-
+                                <input type="datetime" name="fecha" id="fecha" required class="form-control" maxlength="19" autocomplete="off">
+                                {{form.valor.label}}
+                                {{form.valor}} 
+                                {{form.medio_pago}}
+                                {{form.concepto}}
+                                {{form.imagen}}
                                 <div class="dropdown-divider"></div>
-
                                 <div class="row">
                                     <div class="col">
                                         <button type="submit" class="btn btn-danger">
@@ -85,15 +73,13 @@
 <script>
 
     $("#fecha").datetimepicker({
-            format: 'd/m/Y H:i:s',
-            timepicker:true,
-            // minDate:'16/02/2025 00:00:00'    
+        format: 'd/m/Y H:i:s',
+        timepicker:true,
+     // minDate:'16/02/2025 00:00:00'    
     });
 
     $(function () {
-        $("#valor").focus();
         $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
-        // $("#id_valor").val("{{ obj.valor }}");
     });
 </script>
 

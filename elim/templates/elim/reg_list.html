@@ -21,7 +21,8 @@
     <!-- Card menu -->
     <div class="alert alert-info">
       <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_direccion_add_new' %}')" href="#"> Nueva dirección </a>
-      <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_new' %}')" href="#"> Nuevo servicio</a>
+      <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_new' %}')" href="#"> Nuevo servicio</a> -->
+      <a class="btn btn-default" href="{% url 'elim:reg_new' %}" > Nuevo servicio</a>
       <a class="btn btn-default" href="{% url 'elim:reg_direccion_new' %}"> Direcciones</a>
       <a class="btn btn-default" href="{% url 'elim:vehiculo_list' %}"> Vehiculos</a>
 
@@ -34,7 +35,7 @@
       <thead>
         <th class="all">Acciones</th>
         <!-- <th>ID</th> -->
-        <th>Estado</th>
+        <!-- <th>Estado</th> -->
         <th>Fecha</th>
         <th>Trayecto</th>
         <th>Cliente</th>
@@ -51,16 +52,16 @@
         {% for item in obj%}
         <tr>
           <td>
-            <button class="btn btn-warning btn-circle"
-              onclick="return abrir_modal('{% url 'elim:reg_edit' item.id %}')">
+            <a class="btn btn-warning btn-circle"
+              href="{% url 'elim:reg_edit' item.id %}">
               <i class="far fa-edit"></i>
-            </button>
+            </a>
             <!-- <a href="{#% url 'elim:cliente_inactivar' item.id %#}" class="btn btn-danger btn-circle" role="button">
                   <i class="far fa-thumbs-down"></i> -->
             </a>
           </td>
           <!-- <td>{{ item.id }}</td> -->
-          <td>{{ item.estado|yesno:"Activo,Inactivo"}}</td>
+          <!-- <td>{{ item.estado|yesno:"Activo,Inactivo"}}</td> -->
           <td>{{ item.fecha|date:"d/m/Y H:i:s" }}</td>
           <td>{{ item.trayecto }}</td>
           <td>{{ item.cliente }}</td>

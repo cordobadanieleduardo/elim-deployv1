@@ -211,6 +211,9 @@ class Registro(ClaseModelo):
         TRANSFERENCIA = "TRANSFERENCIA", _("Transferencia")
     numero_registo = models.UUIDField(default=uuid.uuid4,max_length=80)    
     fecha = models.DateTimeField(default=datetime.datetime.now(),null=True,blank=True)
+    direccion = models.CharField(max_length=200,null=False,blank=False)
+    latitud = models.CharField(max_length=200,null=True,blank=True)
+    longitud = models.CharField(max_length=200,null=True,blank=True)
     trayecto = models.ForeignKey(Trayecto,on_delete=models.PROTECT)
     cliente	= models.ForeignKey(Cliente,on_delete=models.PROTECT)    
     placa = models.ForeignKey(Vehiculo,on_delete=models.PROTECT)    
@@ -218,13 +221,15 @@ class Registro(ClaseModelo):
     celular = models.CharField(max_length=10)
     medio_pago = models.CharField(max_length=15,choices=Medio_pago,default=Medio_pago.CONTADO)
     valor = models.DecimalField(max_digits=9, decimal_places=2, default=0.0)
-    costo = models.DecimalField(max_digits=9, decimal_places=2, default=0.0)
-    neto = models.DecimalField(max_digits=9, decimal_places=2, default=0.0)
+    costo = models.DecimalField(max_digits=9, decimal_places=2, default=0.0,blank=True)
+    neto = models.DecimalField(max_digits=9, decimal_places=2, default=0.0,blank=True)
     
     def __str__(self):
         return '{}'.format(self.placa)
     
     def save(self):
+        self.costo = float(self.valor) * 0.25
+        self.neto = float(self.valor) - float(self.costo)
         super(Registro,self).save()
 
     class Meta:
@@ -289,11 +294,9 @@ class GastoConductor(ClaseModelo):
     fecha = models.DateTimeField(default=datetime.datetime.now(),blank=True, null=True)
     concepto = models.CharField(max_length=15,choices=Concepto,default=Concepto.GASOLINA)
     medio_pago = models.CharField(max_length=15,choices=Medio_pago,default=Medio_pago.CONTADO)
-    valor = models.DecimalField(max_digits=9,decimal_places=2,max_length=12,
-                                default=0.0,
+    valor = models.DecimalField(
+        max_digits=9,decimal_places=2,max_length=12,default=0.0,
         validators=[MaxValueValidator(1000000), MinValueValidator(10000)])
-    
-    # valor = models.IntegerField(validators=[MaxValueValidator(9999999.99)] , max_length=10)
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.RESTRICT)
     placa = models.CharField(max_length=6)
     cedula = models.IntegerField()

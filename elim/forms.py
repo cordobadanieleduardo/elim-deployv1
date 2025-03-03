@@ -1,5 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.admin.widgets import AutocompleteSelect
+from django.core.exceptions import ValidationError
 from django.contrib import admin
 from django import forms
 from .models import *
@@ -100,23 +101,29 @@ class RegistroForm(forms.ModelForm):
     #valor = forms.DecimalField(required=True)
     class Meta:
         model = Registro
-        fields = ['fecha','trayecto','cliente','placa', 
-                'solicitado_por','celular',
-                'medio_pago','valor','costo','neto']
-        exclude = ['um','fm','uc','fc','numero_registo']
+        fields = ['fecha','direccion','latitud','longitud','trayecto','cliente','placa', 
+                'solicitado_por','celular', 'medio_pago','valor']
+        exclude = ['um','fm','uc','fc','numero_registo','costo','neto']
         #widget={'trayecto': }
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
         #self.fields['pais'].query_set = Pais.objects.all()
         for field in iter(self.fields):
-            self.fields[field].widget.attrs.update({
-                'class':'form-control'
-            })
+            self.fields[field].widget.attrs.update({'class':'form-control'})
         #self.fields['cliente'].widget.attrs['required'] = True               
+        self.fields['latitud'].widget.attrs['type'] = 'hidden'
+        self.fields['longitud'].widget.attrs['type'] = 'hidden'                              
+        # self.fields['costo'].widget.attrs['readonly'] = True               
+        # self.fields['neto'].widget.attrs['readonly'] = True
 
-        self.fields['costo'].widget.attrs['readonly'] = True               
-        self.fields['neto'].widget.attrs['readonly'] = True
+    def clean_valor(self):
+        valor = self.cleaned_data['valor']
+        if valor <= 10000:
+            raise forms.ValidationError("El precio debe ser mayor que 10.000 pesos")
+        if valor >= 1000000:
+            raise forms.ValidationError("El precio debe ser menor que 1.000.000 pesos")
+        return valor
 
 class ServicioForm(forms.ModelForm):
 
@@ -278,7 +285,7 @@ class ServicioForm(forms.ModelForm):
 #         # The above Python code is creating a list called `exclude` containing the strings 'um',
 # 'fm', 'uc', and 'fc'. These strings are likely intended to be used for exclusion or
 # filtering purposes in the code that follows.
-exclude = ['um','fm','uc','fc']
+# exclude = ['um','fm','uc','fc']
 #         widget={'descripcion': forms.TextInput()}
 
 #     def __init__(self, *args, **kwargs):
@@ -367,5 +374,12 @@ class GastoConductorForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({'class':'form-control'})
         
         # self.fields['valor'].validators.append(MaxValueValidator(9999999.99))
-
         # self.fields['fecha'].widget.attrs['value'] = datetime.date.ctimeT
+
+    def clean_valor(self):
+        valor = self.cleaned_data['valor']
+        if valor <= 10000:
+            raise forms.ValidationError("El precio debe ser mayor que 10.000 pesos")
+        if valor >= 1000000:
+            raise forms.ValidationError("El precio debe ser menor que 1.000.000 pesos")
+        return valor

@@ -1,10 +1,11 @@
-{% load static %}
-<div class="modal-dialog modal-fullscreen-sm-down">
-    <div class="modal-content">
+{% extends 'base/base.html' %}
+{% block page_content %}
+<div>
+    <div>
         {% if obj.id  %}
-        <form method="POST" role="form" id="frmReg" class="form-inline" action="{% url 'elim:reg_edit' obj.id %}" enctype="multipart/form-data">
+        <form method="POST" role="form" id="frmReg" action="{% url 'elim:reg_edit' obj.id %}" enctype="multipart/form-data">
         {% else %}
-        <form method="POST" role="form" id="frmReg" class="form-inline" action="{% url 'elim:reg_new' %}" enctype="multipart/form-data">
+        <form method="POST" role="form" id="frmReg" action="{% url 'elim:reg_new' %}" enctype="multipart/form-data">
         {% endif %}
             <div class="col-xl-12 col-md-12 mb-12">
                 {% if obj.id %}
@@ -42,15 +43,34 @@
 
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="col-md-6">
+                                        <div class="col-md-3">
                                             Fecha
                                         </div>
-                                        <div class="col-md-12">                                        
-                                            <input type="datetime" name="fecha" id="fecha" 
+                                        <div class="col-md-3">                                        
+                                            <input type="datetime" name="fecha" id="fecha" required 
                                             class="form-control" maxlength="19" autocomplete="off">
                                         </div>                          
                                     </div>
-                                </div>                                
+                                </div>     
+
+                         
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            Dirección                                           
+                                        </div>
+                                        <div class="col-md-12">    
+                                            <!-- {{form.latitud}} -->
+                                            <!-- {{form.longitud}}      -->
+                                            <input type="hidden" id="id_latitud" name="latitud" value="">
+                                            <input type="hidden" id="id_longitud" name="longitud" value="">
+                            
+                                            
+                                            <input type="text" placeholder="Empiece a escribir la dirección"
+                                                id="direccion" name="direccion" class="form-control">
+                                        </div>                          
+                                    </div>
+                                </div>
 
                                 <div class="row">
                                     <div class="col-md-12">
@@ -58,7 +78,7 @@
                                             Dirección
                                         </div>
                                         <div class="col-md-12">                                        
-                                            <select name="trayecto" id="trayecto" class="form-control" required>
+                                            <select name="trayecto" id="trayecto" class="form-select form-select-lg mb-3" required>
                                                 {% for item in trayectos %}
                                                     <option value="{{item.id}}">{{ item.direccion }} </option>
                                                 {% endfor %}
@@ -74,9 +94,9 @@
                                             Cliente
                                         </div>
                                         <div class="col-md-12">                                        
-                                            <select name="cliente" id="cliente" required>
+                                            <select name="cliente" id="cliente" class="form-select form-select-lg mb-3" required>
                                                 {% for item in clientes %}
-                                                    <option value="{{item.id}}">{{ item.nombre }} </option>
+                                                    <option value="{{item.id}}" >{{ item.nombre }} </option>
                                                 {% endfor %}
                                             </select>
                                         </div>                          
@@ -89,7 +109,7 @@
                                             Solicitado por
                                         </div>
                                         <div class="col-md-12">                                        
-                                            <select name="solicitado_por" id="solicitado_por" class="form-control" required>
+                                            <select name="solicitado_por" id="solicitado_por" class="form-select form-select-lg mb-3" required>
                                                 {% for item in solicitados_por %}
                                                     <option value="{{item.id}}">{{ item.nombre }} </option>
                                                 {% endfor %}
@@ -104,9 +124,9 @@
                                             Vehiculo
                                         </div> 
                                         <div class="col-md-12">                                        
-                                            <select name="placa" id="placa" class="form-control" required>
+                                            <select name="placa" id="placa" class="form-select form-select-lg mb-3" required>
                                                 {% for item in placas %}
-                                                    <option value="{{item.placa}}">{{ item.placa }} </option>
+                                                    <option value="{{item.placa}}">{{ item.placa }} - {{ item.conductor }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>                          
@@ -114,10 +134,10 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="col-md-6">
+                                        <div class="col-md-3">
                                             Celular
                                         </div>  
-                                        <div class="col-md-12">                                        
+                                        <div class="col-md-3">                                        
                                             {{form.celular}} 
                                         </div>                          
                                     </div>
@@ -125,10 +145,10 @@
 
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="col-md-12">
+                                        <div class="col-md-3">
                                             Medio de pago:
                                         </div>  
-                                        <div class="col-md-12">
+                                        <div class="col-md-3">
                                             {{form.medio_pago}}                                          
                                         </div>                          
                                     </div>
@@ -136,37 +156,14 @@
 
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="col-md-6">
+                                        <div class="col-md-3">
                                             Valor:
                                         </div>  
-                                        <div class="col-md-12">
+                                        <div class="col-md-3">
                                             {{form.valor}}                                          
                                         </div>                          
                                     </div>
                                 </div>
-
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="col-md-6">
-                                            Costo:
-                                        </div>  
-                                        <div class="col-md-12">
-                                            {{form.costo}}                                          
-                                        </div>                          
-                                    </div>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="col-md-6">
-                                            Neto:
-                                        </div>  
-                                        <div class="col-md-12">
-                                            {{form.neto}}                                          
-                                        </div>                          
-                                    </div>
-                                </div>
-                                
 
                                 <div class="dropdown-divider"></div>
                                 <div class="row">
@@ -174,10 +171,10 @@
                                         <button type="submit" class="btn btn-danger">
                                             <span class="fa fa-save"></span> Guardar
                                         </button>
-                                        <button type="button" class="btn btn-success"
-                                            onclick="return cerrar_modal()">
+                                        <a type="button" class="btn btn-success"
+                                            href="{% url 'elim:reg_list' %}">
                                             Cancelar
-                                        </button>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -188,15 +185,13 @@
         </form>
     </div>
 </div>
-
-
+{% endblock %}
 {% block js_page %}
 <script>
 
     $("#fecha").datetimepicker({
             format: 'd/m/Y H:i:s',
             timepicker:true,
-            minDate:'16/02/2025 00:00:00'    
     });
 
     $('#cliente').select2({
@@ -229,11 +224,13 @@
         // $("#fecha").focus();
         // $("#id").val("{{ obj.id }}");
         $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
-        $("#cliente").val("{{ obj.cliente }}").change();
-        $("#trayecto").val("{{ obj.trayecto }}").change();
+        $("#cliente").val("{{ obj.cliente.id }}").change();
+        $("#trayecto").val("{{ obj.trayecto.id }}").change();
         $("#placa").val("{{ obj.placa }}").change();
-        $("#solicitado_por").val("{{ obj.solicitado_por }}").change();
-
+        $("#solicitado_por").val("{{ obj.solicitado_por.id }}").change();
+        $('#direccion').val("{{ obj.direccion}}");
+        $('#id_latitud').val("{{ obj.latitud}}");
+        $('#id_longitud').val("{{ obj.longitud}}");
     });
 
 
@@ -249,8 +246,49 @@
         $('#valor').val(0);
         $('#costo').val(0);
         $('#neto').val(0);
-        $("#fecha").focus();
+        // $("#fecha").focus();
     }
+
+    var google_api_key = "{{google_api_key|safe}}";
+    var base_country = "{{base_country|safe}}";
+
+    $.getScript("https://maps.googleapis.com/maps/api/js?key=" + google_api_key + "&libraries=places")
+        .done(function (script, textStatus) {
+            google.maps.event.addDomListener(window, "load", initAutocomplete())
+    })
+
+    function initAutocomplete() {
+     
+        window['autocomplete'] = new google.maps.places.Autocomplete(
+            document.getElementById('direccion'),
+            {
+                types: ['address'],
+                componentRestrictions: { 'country': [base_country.toLowerCase()] },
+            })
+        
+        autocomplete.addListener('place_changed', function () {
+            onPlaceChanged()
+        });
+    }
+
+    function onPlaceChanged (){
+        var auto = window['autocomplete']
+        var geocoder = new google.maps.Geocoder()
+        var address = document.getElementById('direccion').value
+
+        geocoder.geocode( { 'address': address}, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                var latitude = results[0].geometry.location.lat();
+                var longitude = results[0].geometry.location.lng();
+                $('#id_latitud').val(latitude) 
+                $('#id_longitud').val(longitude) 
+                console.log('res', results[0])
+                console.log('latitud', latitude)
+                console.log('longitud', longitude)
+            } 
+        }); 
+    }
+
 
 </script>
 
