@@ -32,6 +32,7 @@
         });
 
         directionsDisplay.setMap(map)
+        // const infoWindow = new InfoWindow();
 
         var onChangeHandler = function () {
             calculateAndDisplayRoute(directionsService, directionsDisplay);
@@ -39,35 +40,8 @@
         document.getElementById('start').addEventListener('change', onChangeHandler);
         document.getElementById('end').addEventListener('change', onChangeHandler);
 
-        infoWindow = new google.maps.InfoWindow();
 
-        const locationButton = document.createElement("button");
-        locationButton.textContent = "Desplazamiento panorámico a la ubicación actual";
-        locationButton.classList.add("custom-map-control-button");
-        map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
-        locationButton.addEventListener("click", () => {
-            // Try HTML5 geolocation.
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const pos = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                        };
 
-                        infoWindow.setPosition(pos);
-                        infoWindow.setContent("Ubicación encontrada.");
-                        infoWindow.open(map);
-                        map.setCenter(pos);
-                    }, () => {
-                        handleLocationError(true, infoWindow, map.getCenter());
-                    },
-                );
-            } else {
-                // Browser doesn't support Geolocation
-                handleLocationError(false, infoWindow, map.getCenter());
-            }
-        });
         locations.forEach(function (location){
             const marker  = new google.maps.marker.AdvancedMarkerElement({
                 position: {lat: location.lat, lng: location.lng}, 
@@ -77,23 +51,14 @@
                 gmpClickable: true,
             });
 
-            
-            attachSecretMessage(marker, location.direccion);
-
-
             // var infowindow = new google.maps.InfoWindow({
             //     content: location.direccion, 
             // });
 
             // infoWindow.push(infowindow)
 
-
-            
-
-
             marker.addListener('gmp-click',function(){
                 toggleHighlight(marker,location)
-        
 
                 // const { target } = domEvent;
 
@@ -107,32 +72,42 @@
                 // infoWindow.open(marker.map, toggleHighlight(marker , location));
                 // infowindow.open(map, toggleHighlight(marker , location))
             });
-        });  
-    }
-
-        // Attaches an info window to a marker with the provided message. When the
-    // marker is clicked, the info window will open with the secret message.
-    function attachSecretMessage(marker, secretMessage) {
-        const infowindow = new google.maps.InfoWindow({
-            content: secretMessage,
-        });
-
-        marker.addListener("gmp-click", () => {
-            infowindow.open(marker.map, marker);
-        });
-    }
-
-
-    function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-        infoWindow.setPosition(pos);
-        infoWindow.setContent(browserHasGeolocation
-            ? "Error: Error en el servicio de ubicación."
-            : "Error: Tu navegador no sup   orta geolocation.",
-        );
-        infoWindow.open(map);
+        });   
+        
     }
 
     function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+
+        let obj = {
+            "origin":{
+                "location":{
+                    "latLng":{
+                        "latitude": 4.7455754,
+                        "longitude": -74.1700713
+                    }
+                }
+            },
+            "destination":{
+                "location":{
+                    "latLng":{
+                        "latitude": 4.6850545,
+                        "longitude": -74.0525236
+                    }
+                }
+            },
+            "travelMode": "DRIVE",
+            "routingPreference": "TRAFFIC_AWARE",
+            "computeAlternativeRoutes": false,
+            "routeModifiers": {
+                "avoidTolls": false,
+                "avoidHighways": false,
+                "avoidFerries": false
+            },
+            "languageCode": "es-CO",
+            "units": "IMPERIAL"
+        };
+        
+
         directionsService.route({
             origin: document.getElementById('start').value,
             destination: document.getElementById('end').value,
@@ -146,7 +121,8 @@
                     computeTotalDistance(directions);
                 }
             } else {
-                window.alert('La solicitud de direcciones falló debido a ' + status);                
+                window.alert('La solicitud de direcciones falló debido a ' + status);
+                
             }
         })        
         .catch((e) => {
@@ -178,19 +154,9 @@
         if (markerView.content.classList.contains("highlight")) {
             markerView.content.classList.remove("highlight");
             markerView.zIndex = null;
-            map.setZoom(12);
-            map.setCenter(markerView.position);
         } else {
             markerView.content.classList.add("highlight");
             markerView.zIndex = 1;
-            map.setZoom(15);
-            map.setCenter(markerView.position);
-            // map.addListener("center_changed", () => {
-            // // 3 segundos después de que el centro del mapa haya cambiado, vuelve a enfocar el marcador.
-            // window.setTimeout(() => {
-            //         map.panTo(markerView.position);
-            //     }, 3000);
-            // });
         }
     }
 
@@ -234,71 +200,75 @@
 
 <!-- rutas -->
 <script>
-    // function getRoute(obj) {
-    //     return fetch(
-    //         "https://routes.googleapis.com/directions/v2:computeRoutes", {
-    //         "method": "POST",
-    //         'mode': 'no-cors',
-    //         "headers": {
-    //             "Content-Type": "application/json",
-    //             "Access-Control-Allow-Origin": "http://127.0.0.1:8000",
-    //             'Access-Control-Allow-Credentials':true,                
-    //             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    //             "X-Goog-FieldMask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline",
-    //             "X-Goo-Api-key": "{{key}}",
-    //         },
-    //         "body": JSON.stringify(obj)
-    //         })
-    //         .then((httpResponse) => {
-    //             return httpResponse.json();
-    //         })
-    //         .then((json) => {
-    //             console.log(json);
-    //             return json;
-    //         })
-    //         .catch((err) => {
-    //             console.log(err);
-    //             return err;
-    //         });
-    // }
-
-    // function getRespuesta() {
-
-    //     let obj = {
-    //         "origin":{
-    //             "location":{
-    //                 "latLng":{
-    //                     "latitude": 4.7455754,
-    //                     "longitude": -74.1700713
-    //                 }
-    //             }
-    //         },
-    //         "destination":{
-    //             "location":{
-    //                 "latLng":{
-    //                     "latitude": 4.6850545,
-    //                     "longitude": -74.0525236
-    //                 }
-    //             }
-    //         },
-    //         "travelMode": "DRIVE",
-            
-    //     };
+    function getRoute(obj) {
+        console.log('obj', (obj))
+        console.log('obj', JSON.stringify(obj))
         
-    //     getRoute(obj).then((res)=>{
-    //         console.log(res)
-    //         // let polyline = res.routes[0].polyline.encodedPolyline;
-    //         // let time = res.routes[0].duration;
-    //         // let markers = [{
-    //         //     "lat": 0.0,
-    //         //     "lat": 0.0,
-    //         //     },{
-    //         //     "lat": 0.0,
-    //         //     "lat": 0.0,
-    //         // }];
-    //         // $w("html").postMessage({markers,polyline,time})
-    //     })
-    // }
+
+        return fetch(
+            "https://routes.googleapis.com/directions/v2:computeRoutes", {
+            "method": "POST",
+            'mode': 'no-cors',
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "http://127.0.0.1:8000",
+                'Access-Control-Allow-Credentials':true,                
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                "X-Goog-FieldMask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline",
+                "X-Goo-Api-key": "{{key}}",
+            },
+            "body": JSON.stringify(obj)
+            })
+            .then((httpResponse) => {
+                return httpResponse.json();
+            })
+            .then((json) => {
+                console.log(json);
+                return json;
+            })
+            .catch((err) => {
+                console.log(err);
+                return err;
+            });
+    }
+
+    function getRespuesta() {
+
+        let obj = {
+            "origin":{
+                "location":{
+                    "latLng":{
+                        "latitude": 4.7455754,
+                        "longitude": -74.1700713
+                    }
+                }
+            },
+            "destination":{
+                "location":{
+                    "latLng":{
+                        "latitude": 4.6850545,
+                        "longitude": -74.0525236
+                    }
+                }
+            },
+            "travelMode": "DRIVE",
+            
+        };
+        
+        getRoute(obj).then((res)=>{
+            console.log(res)
+            // let polyline = res.routes[0].polyline.encodedPolyline;
+            // let time = res.routes[0].duration;
+            // let markers = [{
+            //     "lat": 0.0,
+            //     "lat": 0.0,
+            //     },{
+            //     "lat": 0.0,
+            //     "lat": 0.0,
+            // }];
+            // $w("html").postMessage({markers,polyline,time})
+        })
+    }
 
 
 </script>
@@ -323,8 +293,9 @@
 <div class="pageholder">
     <div class="titleholder">         
         <div class="title"> Mapa Elim Logística   </div>         
+        <button onclick="getRespuesta()"> ruta</button>
     </div>
-    <p>Total Distancia: <span id="total"></span></p>
+    <p>Total Distance: <span id="total"></span></p>
 
     <p>Total tiempo: <span id="tiempo"></span></p>
 

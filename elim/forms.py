@@ -97,8 +97,6 @@ class MuseoForm(forms.ModelForm):
 
 
 class RegistroForm(forms.ModelForm):
-    #fecha = forms.DateTimeInput()
-    #valor = forms.DecimalField(required=True)
     class Meta:
         model = Registro
         fields = ['fecha','direccion','latitud','longitud','trayecto','cliente','placa', 
@@ -108,18 +106,12 @@ class RegistroForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
-        #self.fields['pais'].query_set = Pais.objects.all()
         for field in iter(self.fields):
             self.fields[field].widget.attrs.update({'class':'form-control'})
-        #self.fields['cliente'].widget.attrs['required'] = True               
-        self.fields['latitud'].widget.attrs['type'] = 'hidden'
-        self.fields['longitud'].widget.attrs['type'] = 'hidden'                              
-        # self.fields['costo'].widget.attrs['readonly'] = True               
-        # self.fields['neto'].widget.attrs['readonly'] = True
 
     def clean_valor(self):
         valor = self.cleaned_data['valor']
-        if valor <= 10000:
+        if valor < 10000:
             raise forms.ValidationError("El precio debe ser mayor que 10.000 pesos")
         if valor >= 1000000:
             raise forms.ValidationError("El precio debe ser menor que 1.000.000 pesos")
@@ -320,7 +312,6 @@ class DistanceForm(forms.ModelForm):
     class Meta: 
         model = Distances
         exclude = ['created_at', 'edited_at', 'distance_km','duration_mins','duration_traffic_mins']
-        
 
 
 class VehiculoForm(forms.ModelForm):

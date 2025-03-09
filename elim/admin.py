@@ -1,5 +1,9 @@
 from django.contrib import admin
 from .models import *
+
+class ParametroAdmin(admin.ModelAdmin):
+    search_fields = ('nombre'),
+    ordering = ['nombre']
             
 class TrayectoAdmin(admin.ModelAdmin):
     search_fields = ('direccion'),
@@ -48,21 +52,19 @@ class MuseoAdmin(admin.ModelAdmin):
 
 class RegistroAdmin(admin.ModelAdmin):
     autocomplete_fields = ['cliente','placa','trayecto','solicitado_por']
-    list_display = ['cliente','placa','trayecto','solicitado_por','celular','medio_pago','valor','costo','neto','uc']
-    
+    list_display = ['cliente','placa','medio_pago','valor','costo','neto','uc']    
     ordering = ['-fecha']
 
 class GastoConductorAdmin(admin.ModelAdmin):
     # autocomplete_fields = ['cliente','placa','trayecto','solicitado_por']
-    list_display = ['fecha','concepto','valor',]
-    
+    list_display = ['fecha','concepto','valor',]    
     ordering = ['-id']
 
 
 # admin.site.register(Pais, PaisAdmin)
 # admin.site.register(Museo, MuseoAdmin)
 
-
+admin.site.register(Parametro, ParametroAdmin)
 admin.site.register(Trayecto, TrayectoAdmin)
 admin.site.register(Persona,PersonaAdmin)
 admin.site.register(Cliente,ClienteAdmin)

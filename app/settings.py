@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_userforeignkey',
     'rest_framework',
     'django_filters',
+    'django.contrib.humanize',
 ]
 
 # 
@@ -135,7 +136,9 @@ AUTH_PASSWORD_VALIDATORS = [
 #api daniel
 #AIzaSyCY6hkF9iElUnh2bOLsZk4vPj9Di3shsA4
 #AIzaSyCrffkDj2QtP_8iZwMgnxBj4d-89l_zauY
-GOOGLE_API_KEY = 'AIzaSyCrffkDj2QtP_8iZwMgnxBj4d-89l_zauY'
+#AIzaSyCrffkDj2QtP_8iZwMgnxBj4d-89l_zauY
+#AIzaSyAFYqG1ONwV4Ob6BloUnchNZeKLNF3Hm94
+GOOGLE_API_KEY = 'AIzaSyAFYqG1ONwV4Ob6BloUnchNZeKLNF3Hm94'
 
 
 # Internationalization
@@ -144,6 +147,9 @@ GOOGLE_API_KEY = 'AIzaSyCrffkDj2QtP_8iZwMgnxBj4d-89l_zauY'
 LANGUAGE_CODE = 'es-CO'
 
 TIME_ZONE = 'America/Bogota'
+
+# TIME_ZONE = 'UTC'
+
 
 USE_I18N = True
 

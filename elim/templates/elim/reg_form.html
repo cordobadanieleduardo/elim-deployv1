@@ -66,7 +66,7 @@
                                             <input type="hidden" id="id_longitud" name="longitud" value="">
                             
                                             
-                                            <input type="text" placeholder="Empiece a escribir la dirección"
+                                            <input type="text" placeholder="Empiece a escribir la dirección" required
                                                 id="direccion" name="direccion" class="form-control">
                                         </div>                          
                                     </div>
@@ -188,41 +188,32 @@
 {% endblock %}
 {% block js_page %}
 <script>
-
     $("#fecha").datetimepicker({
-            format: 'd/m/Y H:i:s',
-            timepicker:true,
+        format: 'd/m/Y H:i:s',
+        timepicker: true,
     });
 
     $('#cliente').select2({
-            placeholder: "Seleccione cliente",
-            allowClear: true
+        placeholder: "Seleccione cliente",
+        allowClear: true
     });
 
     $('#trayecto').select2({
-            placeholder: "Seleccione trayecto",
-            allowClear: true
+        placeholder: "Seleccione trayecto",
+        allowClear: true
     });
 
     $('#placa').select2({
-            placeholder: "Seleccione placa",
-            allowClear: true
+        placeholder: "Seleccione placa",
+        allowClear: true
     });
 
     $('#solicitado_por').select2({
-            placeholder: "Seleccione persona",
-            allowClear: true
+        placeholder: "Seleccione persona",
+        allowClear: true
     });
-
-    $('#valor').change(function(){
-        console.log('cambio valor****')
-        calcular();
-    });
-
 
     $(function () {
-        // $("#fecha").focus();
-        // $("#id").val("{{ obj.id }}");
         $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
         $("#cliente").val("{{ obj.cliente.id }}").change();
         $("#trayecto").val("{{ obj.trayecto.id }}").change();
@@ -233,63 +224,37 @@
         $('#id_longitud').val("{{ obj.longitud}}");
     });
 
-
-    function calcular(){
-        var cant,prec,desc,stotal,total;
-        cant = $("#valor").val();
-        console.log('valor',$("#valor").val()) 
-        $('#costo').val(cant);
-        $('#neto').val(prec);
-    }
-
-    function clear(){
-        $('#valor').val(0);
-        $('#costo').val(0);
-        $('#neto').val(0);
-        // $("#fecha").focus();
-    }
-
     var google_api_key = "{{google_api_key|safe}}";
     var base_country = "{{base_country|safe}}";
 
     $.getScript("https://maps.googleapis.com/maps/api/js?key=" + google_api_key + "&libraries=places")
         .done(function (script, textStatus) {
             google.maps.event.addDomListener(window, "load", initAutocomplete())
-    })
+        });
 
     function initAutocomplete() {
-     
         window['autocomplete'] = new google.maps.places.Autocomplete(
             document.getElementById('direccion'),
             {
                 types: ['address'],
                 componentRestrictions: { 'country': [base_country.toLowerCase()] },
             })
-        
         autocomplete.addListener('place_changed', function () {
             onPlaceChanged()
         });
-    }
+    };
 
-    function onPlaceChanged (){
+    function onPlaceChanged() {
         var auto = window['autocomplete']
         var geocoder = new google.maps.Geocoder()
         var address = document.getElementById('direccion').value
-
-        geocoder.geocode( { 'address': address}, function(results, status) {
+        geocoder.geocode({ 'address': address }, function (results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
-                var latitude = results[0].geometry.location.lat();
-                var longitude = results[0].geometry.location.lng();
-                $('#id_latitud').val(latitude) 
-                $('#id_longitud').val(longitude) 
-                console.log('res', results[0])
-                console.log('latitud', latitude)
-                console.log('longitud', longitude)
-            } 
-        }); 
-    }
-
-
+                $('#id_latitud').val(results[0].geometry.location.lat());
+                $('#id_longitud').val(results[0].geometry.location.lng());
+            }
+        });
+    };
 </script>
 
 {% endblock %}

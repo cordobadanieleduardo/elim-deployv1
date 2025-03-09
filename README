@@ -29,6 +29,8 @@ pip install Django psycopg[binary] Pillow reportlab django-userforeignkey django
 
 pip install psycopg[binary] Pillow reportlab django-userforeignkey djangorestframework
 pip install django-filter
+pip install xhtml2pdf
+
 
 # CONFIGURAR API google maps
 

@@ -1,4 +1,4 @@
-from django.utils import timezone
+import os
 from django.shortcuts import get_object_or_404,render, redirect
 from django.contrib.auth.models import User
 from django.views import generic
@@ -7,20 +7,21 @@ from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import  DjangoFilterBackend
 from django.http import JsonResponse
-
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.utils import timezone
 from .serializers import MuseoSerializer, PaisSerializer,ClienteSerializer
 
 from django.contrib import messages
-
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required, permission_required
 
 from .models import Cliente,Proveedor,Servicio,Vehiculo \
     ,Programador,Trayecto,Persona,Museo, Pais, Registro \
-        , Locations,Distances,PerfilConductor, GastoConductor
+        , Locations,Distances,PerfilConductor , GastoConductor
 from .forms import ClienteForm,ProveedorForm,\
                 ServicioForm, MuseoForm , RegistroForm,\
-                DistanceForm, TrayectoForm, VehiculoForm,ConductorForm, GastoConductorForm
+                DistanceForm, TrayectoForm, VehiculoForm,ConductorForm , GastoConductorForm
 
 from bases.views import SinPrivilegios
 from django.views import View
@@ -323,9 +324,8 @@ class RegistroView(SuccessMessageMixin, SinPrivilegios, generic.ListView):
     permission_required="elim.view_registro"
     ordering = ['-fecha']
     
-    def get_queryset(self):        
-        qs = super().get_queryset().filter(estado=True)      
-        return qs
+    def get_queryset(self):              
+        return super().get_queryset().filter(estado=True)
 
 
 class RegistroNew(SuccessMessageMixin,SinPrivilegios, generic.CreateView):
@@ -392,7 +392,7 @@ def reg_add_edit(request,id=None):
     reg_form = RegistroForm
     if request.method == 'POST':
         reg_form = RegistroForm(request.POST)
-        trayecto  = request.POST.get("trayecto")
+        trayecto = request.POST.get("trayecto")
         cliente = request.POST.get("cliente")
         placa = request.POST.get("placa")
         solicitado_por  = request.POST.get("solicitado_por")   
@@ -426,13 +426,13 @@ def reg_add_edit(request,id=None):
                 longitud = request.POST.get("longitud"),
             )
         if reg_form.is_valid():
-            reg.save()
+            reg.save()            
             messages.success(request,'Servicio actualizado')
             return redirect('elim:reg_list')
         else:
             print(reg_form.errors)
     elif id:
-        reg= Registro.objects.get(pk=id)
+        reg = Registro.objects.get(pk=id)
         reg = {
             'id':reg.id,
             'fecha':reg.fecha,
@@ -448,7 +448,7 @@ def reg_add_edit(request,id=None):
             'longitud':reg.longitud,        
         }
         reg_form = RegistroForm(reg)
-    context={
+    context = {
         'form':reg_form,
         'obj':reg,
         'clientes':Cliente.objects.filter(estado=True),
@@ -655,21 +655,139 @@ class MapView(View):
     template_name = "trayectos/map.html"
 
     def get(self,request): 
-        key = settings.GOOGLE_API_KEY
-        eligable_locations = Trayecto.objects.filter(place_id__isnull=False)
+        # eligable_locations = Trayecto.objects.filter(place_id__isnull=False)
+        eligable_locations = Registro.objects.filter()
         locations = []
-
+        registros = []
         for a in eligable_locations: 
             data = {
-                'lat': float(a.lat), 
-                'lng': float(a.lng), 
-                'name': a.name
+                'lat': float(a.latitud), 
+                'lng': float(a.longitud), 
+                'direccion': str(a.direccion),
+                'celular': str(a.celular),
+                'cliente': str(a.cliente),
+                'valor':float(a.valor),
+                'type': 'home'
             }
-
             locations.append(data)
+            registros.append(data)
+        eligable_locations = Vehiculo.objects.filter()
+        vehiculos = []
+        for a in eligable_locations: 
+            ubicacion = Trayecto.objects.get(pk=a.ubicacion_id)
+            data = {
+                'lat': float(ubicacion.lat), 
+                'lng': float(ubicacion.lng), 
+                'direccion': str(ubicacion.direccion),
+                'celular': str(a.conductor),
+                'cliente': str(a.disponibilidad),
+                'valor': str(a.placa),
+                'type': 'truck'
+            }
+            # <i class="fa-solid fa-car-side"></i>
+            locations.append(data)
+            vehiculos.append(data)
         context = {
-            "key":key, 
-            "locations": locations
+            "key":settings.GOOGLE_API_KEY, 
+            "locations": locations,
+            "registros":registros,
+            "vehiculos":vehiculos,
+        }
+        return render(request, self.template_name, context)
+    
+    def post(self,request):
+        
+        from_location = form.cleaned_data['from_location']
+        from_location_info = Locations.objects.get(name=from_location)
+        from_adress_string = str(from_location_info.adress)+", "+str(from_location_info.zipcode)+", "+str(from_location_info.city)+", "+str(from_location_info.country)
+
+        to_location = form.cleaned_data['to_location']
+        to_location_info = Locations.objects.get(name=to_location)
+        to_adress_string = str(to_location_info.adress)+", "+str(to_location_info.zipcode)+", "+str(to_location_info.city)+", "+str(to_location_info.country)
+
+        mode = form.cleaned_data['mode']
+        now = datetime.now()
+
+        gmaps = googlemaps.Client(key= settings.GOOGLE_API_KEY)
+        calculate = gmaps.distance_matrix(
+                from_adress_string,
+                to_adress_string,
+                mode = mode,
+                departure_time = now
+        )
+
+
+        duration_seconds = calculate['rows'][0]['elements'][0]['duration']['value']
+        duration_minutes = duration_seconds/60
+
+        distance_meters = calculate['rows'][0]['elements'][0]['distance']['value']
+        distance_kilometers = distance_meters/1000
+
+        if 'duration_in_traffic' in calculate['rows'][0]['elements'][0]: 
+            duration_in_traffic_seconds = calculate['rows'][0]['elements'][0]['duration_in_traffic']['value']
+            duration_in_traffic_minutes = duration_in_traffic_seconds/60
+        else: 
+            duration_in_traffic_minutes = None
+
+        
+        obj = Distances(
+            from_location = Locations.objects.get(name=from_location),
+            to_location = Locations.objects.get(name=to_location),
+            mode = mode,
+            distance_km = distance_kilometers,
+            duration_mins = duration_minutes,
+            duration_traffic_mins = duration_in_traffic_minutes
+        )
+
+        obj.save()
+        
+        
+        pass
+
+class MapConductorView(View): 
+    template_name = "trayectos/map_con.html"
+    def get(self,request): 
+        # eligable_locations = Trayecto.objects.filter(place_id__isnull=False)
+        eligable_locations = Registro.objects.filter()
+        locations = []
+        registros = []
+        for a in eligable_locations: 
+            data = {
+                'lat': float(a.latitud), 
+                'lng': float(a.longitud), 
+                'direccion': str(a.direccion),
+                'celular': str(a.celular),
+                'cliente': str(a.cliente),
+                'valor':float(a.valor),
+                'type': 'home'
+            }
+            locations.append(data)
+            registros.append(data)
+    
+        vehiculos = []
+        perfil = PerfilConductor.objects.get(usuario=self.request.user)
+        if perfil:
+            vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo_id)
+            eligable_locations = Vehiculo.objects.filter(pk=vehiculo.placa)
+            for a in eligable_locations: 
+                ubicacion = Trayecto.objects.get(pk=a.ubicacion_id)
+                data = {
+                    'lat': float(ubicacion.lat), 
+                    'lng': float(ubicacion.lng), 
+                    'direccion': str(ubicacion.direccion),
+                    'celular': str(a.conductor),
+                    'cliente': str(a.disponibilidad),
+                    'valor': str(a.placa),
+                    'type': 'truck'
+                }
+                # <i class="fa-solid fa-car-side"></i>
+                locations.append(data)
+                vehiculos.append(data)
+        context = {
+            "key":settings.GOOGLE_API_KEY, 
+            "locations": locations,
+            "registros":registros,
+            "vehiculos":vehiculos,
         }
         return render(request, self.template_name, context)
 
@@ -801,9 +919,7 @@ class GastoConductorNew(VistaBaseCreate):
             form.instance.cedula = vehiculo.conductor.cedula
             form.instance.conductor = vehiculo.conductor.nombre
         return super().form_valid(form)
-    
-    
-    
+
 class GastoConductorEdit(VistaBaseEdit):
     permission_required="elim.change_gastoconductor"
     model = GastoConductor
@@ -843,12 +959,6 @@ class GastoConductorEdit(VistaBaseEdit):
             form.instance.cedula = vehiculo.conductor.cedula
             form.instance.conductor = vehiculo.conductor.nombre
         return super().form_valid(form)
-
-
-
-
-# from django.http import JsonResponse
-# from .models import Book
 
 # def book_detail(request, book_id):
 #     book = get_object_or_404(Book, id=book_id)

@@ -6,14 +6,13 @@
 
 {% block content %}
 <!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script> -->
-
-     
- <!-- marcadores  -->
+<!-- marcadores  -->
 <script> 
-    let map
+    let map;
     async function initMap(){
          // Request needed libraries.
         // const { InfoWindow } = await google.maps.importLibrary("maps")        
+        const { Map } = await google.maps.importLibrary("maps");
         const { AdvancedMarkerElement } = await google.maps.importLibrary("marker")        
         var directionsService = new google.maps.DirectionsService;
         var directionsDisplay =  new google.maps.DirectionsRenderer;
@@ -23,8 +22,7 @@
         
         const bogota = { lat:  4.7109886, lng: -74.072092 };
 
-        map = new google.maps.Map(document.getElementById("map"),{
-            //center: { lat: firstLocation.lat, lng: firstLocation.lng }, 
+        map = new google.maps.Map(document.getElementById("map"),{            
             zoom:12,
             scaleControl: true,
             center: bogota,
@@ -36,7 +34,7 @@
         var onChangeHandler = function () {
             calculateAndDisplayRoute(directionsService, directionsDisplay);
         };
-        document.getElementById('start').addEventListener('change', onChangeHandler);
+        // document.getElementById('start').addEventListener('change', onChangeHandler);
         document.getElementById('end').addEventListener('change', onChangeHandler);
 
         infoWindow = new google.maps.InfoWindow();
@@ -50,11 +48,7 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const pos = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                        };
-
+                        const pos = {lat: position.coords.latitude,lng: position.coords.longitude};
                         infoWindow.setPosition(pos);
                         infoWindow.setContent("Ubicación encontrada.");
                         infoWindow.open(map);
@@ -76,52 +70,23 @@
                 content: buildContent(location),
                 gmpClickable: true,
             });
-
             
             attachSecretMessage(marker, location.direccion);
 
-
-            // var infowindow = new google.maps.InfoWindow({
-            //     content: location.direccion, 
-            // });
-
-            // infoWindow.push(infowindow)
-
-
-            
-
-
             marker.addListener('gmp-click',function(){
-                toggleHighlight(marker,location)
-        
-
-                // const { target } = domEvent;
-
-                // infoWindow.close();
-                // infoWindow.setContent(marker.title);
-                // infoWindow.open(marker.map, marker );
-                // toggleHighlight(AdvancedMarkerElement, location);
-                // infoWindow.forEach(function(iw){
-                    // iw.close();
-                // });
-                // infoWindow.open(marker.map, toggleHighlight(marker , location));
-                // infowindow.open(map, toggleHighlight(marker , location))
+                toggleHighlight(marker,location);
             });
         });  
     }
 
-        // Attaches an info window to a marker with the provided message. When the
+    // Attaches an info window to a marker with the provided message. When the
     // marker is clicked, the info window will open with the secret message.
     function attachSecretMessage(marker, secretMessage) {
-        const infowindow = new google.maps.InfoWindow({
-            content: secretMessage,
-        });
-
+        const infowindow = new google.maps.InfoWindow({content: secretMessage,});
         marker.addListener("gmp-click", () => {
             infowindow.open(marker.map, marker);
         });
     }
-
 
     function handleLocationError(browserHasGeolocation, infoWindow, pos) {
         infoWindow.setPosition(pos);
@@ -132,7 +97,7 @@
         infoWindow.open(map);
     }
 
-    function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+    function calculateAndDisplayRoute(directionsService, directionsDisplay) {        
         directionsService.route({
             origin: document.getElementById('start').value,
             destination: document.getElementById('end').value,
@@ -155,10 +120,8 @@
     }
 
     function computeTotalDistance(result) {
-        console.log('****',result)
         let total = 0;
         const myroute = result.routes[0];
-        console.log('****',result.routes[0])
 
         if (!myroute) {
             return;
@@ -172,7 +135,6 @@
         document.getElementById("total").innerHTML = total + " km";
         document.getElementById("tiempo").innerHTML = myroute.legs[0].duration.text;
     }
-
 
     function toggleHighlight(markerView, property) {
         if (markerView.content.classList.contains("highlight")) {
@@ -231,93 +193,21 @@
 
 </script>
 
-
-<!-- rutas -->
-<script>
-    // function getRoute(obj) {
-    //     return fetch(
-    //         "https://routes.googleapis.com/directions/v2:computeRoutes", {
-    //         "method": "POST",
-    //         'mode': 'no-cors',
-    //         "headers": {
-    //             "Content-Type": "application/json",
-    //             "Access-Control-Allow-Origin": "http://127.0.0.1:8000",
-    //             'Access-Control-Allow-Credentials':true,                
-    //             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    //             "X-Goog-FieldMask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline",
-    //             "X-Goo-Api-key": "{{key}}",
-    //         },
-    //         "body": JSON.stringify(obj)
-    //         })
-    //         .then((httpResponse) => {
-    //             return httpResponse.json();
-    //         })
-    //         .then((json) => {
-    //             console.log(json);
-    //             return json;
-    //         })
-    //         .catch((err) => {
-    //             console.log(err);
-    //             return err;
-    //         });
-    // }
-
-    // function getRespuesta() {
-
-    //     let obj = {
-    //         "origin":{
-    //             "location":{
-    //                 "latLng":{
-    //                     "latitude": 4.7455754,
-    //                     "longitude": -74.1700713
-    //                 }
-    //             }
-    //         },
-    //         "destination":{
-    //             "location":{
-    //                 "latLng":{
-    //                     "latitude": 4.6850545,
-    //                     "longitude": -74.0525236
-    //                 }
-    //             }
-    //         },
-    //         "travelMode": "DRIVE",
-            
-    //     };
-        
-    //     getRoute(obj).then((res)=>{
-    //         console.log(res)
-    //         // let polyline = res.routes[0].polyline.encodedPolyline;
-    //         // let time = res.routes[0].duration;
-    //         // let markers = [{
-    //         //     "lat": 0.0,
-    //         //     "lat": 0.0,
-    //         //     },{
-    //         //     "lat": 0.0,
-    //         //     "lat": 0.0,
-    //         // }];
-    //         // $w("html").postMessage({markers,polyline,time})
-    //     })
-    // }
-
-
-</script>
-
 <div id="floating-panel">
-    <b>Start: </b>
-    <select id="start">
-        <option value=""> Seleccione vehiculos </option>
+    <b>Inicio: </b>
+    <select id="start">    
         {% for i in vehiculos %}
         <option value="{{ i.direccion }}">{{ i.direccion }} - {{i.valor}}</option>
         {% endfor %}        
-    </select>
-    <b>End: </b>
+    </select>    
+    <b>Destino: </b>
     <select id="end">        
+        <option value=""> Seleccione dirección </option>
         {% for i in registros %}
-        <option value="{{ i.direccion }}">{{ i.direccion }}</option>
+            <option value="{{ i.direccion }}">{{ i.direccion }}</option>
         {% endfor %}
     </select>
-    </div>
+</div>
 
 
 <div class="pageholder">
@@ -339,6 +229,4 @@
         <a href="{% url 'elim:trayecto_view' %}">Ir a direcciones</a> 
     </div>
 </div>
-
-
 {% endblock %}

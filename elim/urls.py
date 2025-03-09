@@ -5,6 +5,7 @@ from django.urls import path
 
 #from .views import *
 from . import views
+from .reportes import reporte_registros
 
 
 urlpatterns = [
@@ -65,9 +66,12 @@ urlpatterns = [
     path('gastos/edit/<int:pk>',views.GastoConductorEdit.as_view(), name='gasto_edit'),
     path('gastos/detail/<int:pk>',views.GastoConductorDetailView.as_view(), name='gasto_detail'),
     
-    path('map', views.MapView.as_view(), name='my_map_view'), 
-    path('route', views.route, name="route"),
+    path('map/', views.MapView.as_view(), name='my_map_view'), 
+    path('map/conductor/', views.MapConductorView.as_view(), name='conductor_map_view'), 
+    path('route/', views.route, name="route"),
 
+    path('reporte/', reporte_registros, name='registros_print_all'),
+    # path('reporte/<int:compra_id>/imprimir', imprimir_compra,name="compras_print_one"),
 
 #     path('subcategorias/',SubCategoriaView.as_view(), name='subcategoria_list'),
 #     path('subcategorias/new',SubCategoriaNew.as_view(), name='subcategoria_new'),
