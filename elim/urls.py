@@ -71,6 +71,15 @@ urlpatterns = [
     path('route/', views.route, name="route"),
 
     path('reporte/', reporte_registros, name='registros_print_all'),
+    
+    path('reporte/list/',views.ReporteView.as_view(), name='repo_list'),    
+    path('reporte/detail/<int:pk>',views.ReporteDetailView.as_view(), name='repo_detail'),
+    
+    path('conductor/viaje/reporte/list/',views.ViajeView.as_view(), name='repo_viaje_list'),    
+    path('conductor/viaje/reporte/detail/<int:pk>',views.ViajeDetailView.as_view(), name='repo_viaje_detail'),
+    
+    
+    
     # path('reporte/<int:compra_id>/imprimir', imprimir_compra,name="compras_print_one"),
 
 #     path('subcategorias/',SubCategoriaView.as_view(), name='subcategoria_list'),

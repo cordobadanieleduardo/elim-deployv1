@@ -193,6 +193,19 @@
 
 </script>
 
+
+<form method="post" >
+    {% csrf_token %}
+    <div class="linkholder">        
+        <span id="total"></span>
+        <span id="tiempo"></span>
+        <div class="form1 ml-3"> {{form.from_location}} </div>
+        <div class="form1 ml-3"> {{form.to_location}} </div>
+        <button class="ourbutton" type="submit"> Tomar servicio </button>
+    </div>
+</form>
+
+
 <div id="floating-panel">
     <b>Inicio: </b>
     <select id="start">    

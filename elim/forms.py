@@ -296,14 +296,20 @@ class ServicioForm(forms.ModelForm):
 
 
 
-
-
 modes = (
     ("driving", "driving"), 
     ("walking", "walking"),
     ("bicycling", "bicycling"),
     ("transit", "transit")
 )
+
+class ViajeConductorForm(forms.ModelForm): 
+    from_location = forms.ModelChoiceField(label="Origen", required=True, queryset=Trayecto.objects.filter(estado=True))
+    to_location = forms.ModelChoiceField(label="Destino", required=True, queryset=Registro.objects.filter(estado=True))
+    # mode = forms.ChoiceField(choices=modes, required=True)
+    class Meta: 
+        model = Viaje
+        exclude = ['mode','created_at', 'edited_at', 'distance_km','duration_mins','duration_traffic_mins']
 
 class DistanceForm(forms.ModelForm): 
     from_location = forms.ModelChoiceField(label="Location from", required=True, queryset=Locations.objects.all())

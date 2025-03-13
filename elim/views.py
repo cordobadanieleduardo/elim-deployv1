@@ -18,10 +18,11 @@ from django.contrib.auth.decorators import login_required, permission_required
 
 from .models import Cliente,Proveedor,Servicio,Vehiculo \
     ,Programador,Trayecto,Persona,Museo, Pais, Registro \
-        , Locations,Distances,PerfilConductor , GastoConductor
+        , Locations,Distances,PerfilConductor , GastoConductor, Viaje
 from .forms import ClienteForm,ProveedorForm,\
                 ServicioForm, MuseoForm , RegistroForm,\
-                DistanceForm, TrayectoForm, VehiculoForm,ConductorForm , GastoConductorForm
+                DistanceForm, TrayectoForm, VehiculoForm,ConductorForm , GastoConductorForm ,\
+                    ViajeConductorForm
 
 from bases.views import SinPrivilegios
 from django.views import View
@@ -92,9 +93,8 @@ class ClienteDel(SuccessMessageMixin, SinPrivilegios, generic.DeleteView):
 
 @login_required(login_url="/login/")
 @permission_required("elim.change_cliente",login_url="/login/")
-def cliente_inactivar(request,id):
-    cliente = Cliente.objects.filter(pk=id).first()
-    if cliente:
+def cliente_inactivar(request,id):    
+    if cliente:= Cliente.objects.filter(pk=id).first():
         cliente.estado = not cliente.estado
         cliente.save()
         return redirect('elim:cliente_list')    
@@ -163,12 +163,6 @@ class ConductorView(SinPrivilegios, generic.ListView):
             # return redirect('elim:trayecto_view')
         return context
         
-        
-        
-   
-       # context[""] = 
-    
-
 class ConductorEdit(VistaBaseEdit):
     permission_required = "elim.change_vehiculo"
     model = Vehiculo
@@ -222,9 +216,8 @@ class TrayectoEdit(VistaBaseEdit):
 
 @login_required(login_url="/login/")
 @permission_required("elim.change_trayecto",login_url="/login/")
-def direccion_inactivar(request,id):
-    reg = Trayecto.objects.filter(pk=id).first()
-    if reg:
+def direccion_inactivar(request,id):    
+    if reg := Trayecto.objects.filter(pk=id).first():
         reg.estado = not reg.estado
         reg.save()
         return redirect('elim:trayecto_list')   
@@ -747,6 +740,7 @@ class MapView(View):
 class MapConductorView(View): 
     template_name = "trayectos/map_con.html"
     def get(self,request): 
+        form = ViajeConductorForm
         # eligable_locations = Trayecto.objects.filter(place_id__isnull=False)
         eligable_locations = Registro.objects.filter()
         locations = []
@@ -784,12 +778,72 @@ class MapConductorView(View):
                 locations.append(data)
                 vehiculos.append(data)
         context = {
+            "form": form,
             "key":settings.GOOGLE_API_KEY, 
             "locations": locations,
             "registros":registros,
             "vehiculos":vehiculos,
         }
         return render(request, self.template_name, context)
+    def post(self, request): 
+        form = ViajeConductorForm(request.POST)
+        if form.is_valid():            
+            from_location = form.cleaned_data['from_location']
+            from_location_info = Trayecto.objects.get(id=from_location.id)            
+            from_adress_string = f"{from_location_info.direccion}" #, {str(from_location_info.zipcode)}, {str(from_location_info.ciudad)}, {str(from_location_info.pais)}"
+            
+            to_location = form.cleaned_data['to_location']
+            to_location_info = Registro.objects.get(id=to_location.id)
+            to_adress_string = f"{to_location_info.trayecto.direccion}" #, {str(to_location_info.trayecto.zipcode)}, {str(to_location_info.trayecto.ciudad)}, {str(to_location_info.trayecto.pais)}"
+
+            mode = 'driving' ##googlemaps.TravelMode.DRIVING #'DRIVING'
+            # # mode = form.cleaned_data['mode']
+            now = datetime.now()
+
+            print('from_location',from_location)
+            print('from_location',from_location)
+            
+            gmaps = googlemaps.Client(key= settings.GOOGLE_API_KEY)
+            calculate = gmaps.distance_matrix(
+                    from_adress_string,
+                    to_adress_string,
+                    mode = mode,
+                    departure_time = now
+            )
+
+            duration_minutes_text = calculate['rows'][0]['elements'][0]['duration']['text']
+            duration_seconds = calculate['rows'][0]['elements'][0]['duration']['value']
+            duration_minutes = duration_seconds/60
+
+            distance_kilometers_text = calculate['rows'][0]['elements'][0]['distance']['text']
+            distance_meters = calculate['rows'][0]['elements'][0]['distance']['value']
+            distance_kilometers = distance_meters/1000
+
+            if 'duration_in_traffic' in calculate['rows'][0]['elements'][0]: 
+                duration_in_traffic_minutes_text = calculate['rows'][0]['elements'][0]['duration_in_traffic']['text']
+                duration_in_traffic_seconds = calculate['rows'][0]['elements'][0]['duration_in_traffic']['value']
+                duration_in_traffic_minutes = duration_in_traffic_seconds/60
+            else: 
+                duration_in_traffic_minutes = None
+            
+            obj = Viaje(
+                from_location = Trayecto.objects.get(id=from_location.id),
+                to_location = Registro.objects.get(id=to_location.id),
+                mode = mode,
+                distance_km_text = distance_kilometers_text,
+                distance_km = distance_kilometers,
+                duration_mins_text = duration_minutes_text,
+                duration_mins = duration_minutes,
+                duration_traffic_mins_text = duration_in_traffic_minutes_text,
+                duration_traffic_mins = duration_in_traffic_minutes
+            )
+            messages.success(request,'Servicio actualizado')
+            obj.save()            
+        else:
+            messages.success(request,'Error al intentar calcular la distancia') 
+            print(form.errors)
+        
+        return redirect('elim:repo_viaje_list')
 
 class DistanceView(View):
     template_name = "trayectos/distance.html"
@@ -981,3 +1035,50 @@ class GastoConductorEdit(VistaBaseEdit):
 #     except Exception as e:
 #         # Log the error here
 #         return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
+
+
+class ReporteDetailView(SinPrivilegios, generic.DetailView):
+    permission_required = "elim.view_registro"
+    model = Registro
+    template_name = "reportes/repo_detail.html"
+    context_object_name = "obj"
+
+class ReporteView(SinPrivilegios, generic.ListView):
+    permission_required = "elim.view_reporte"
+    model = Registro
+    template_name = "reportes/repo_list.html"
+    context_object_name = "obj"
+    ordering = ['-id']
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            #placa=PerfilConductor.objects.get(usuario = self.request.user)
+            )
+    
+    # def get_queryset(self):                
+    #     if PerfilConductor.objects.filter(usuario = self.request.user):                 
+    #         return super().get_queryset().filter(placa=PerfilConductor.objects.get(usuario = self.request.user))
+
+
+
+class ViajeDetailView(SinPrivilegios, generic.DetailView):
+    permission_required = "elim.view_viaje"
+    model = Viaje
+    template_name = "conductor/viajes/repo_detail.html"
+    context_object_name = "obj"
+
+class ViajeView(SinPrivilegios, generic.ListView):
+    permission_required = "elim.view_viaje"
+    model = Viaje
+    template_name = "conductor/viajes/repo_list.html"
+    context_object_name = "obj"
+    ordering = ['-id']
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            #placa=PerfilConductor.objects.get(usuario = self.request.user)
+            )
+    
+    # def get_queryset(self):                
+    #     if PerfilConductor.objects.filter(usuario = self.request.user):                 
+    #         return super().get_queryset().filter(placa=PerfilConductor.objects.get(usuario = self.request.user))

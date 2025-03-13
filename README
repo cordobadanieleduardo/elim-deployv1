@@ -30,7 +30,9 @@ pip install Django psycopg[binary] Pillow reportlab django-userforeignkey django
 pip install psycopg[binary] Pillow reportlab django-userforeignkey djangorestframework
 pip install django-filter
 pip install xhtml2pdf
-
+pip install django-userforeignkey
+pip install dj-database-url gunicorn python-decouple whitenoise
+py -m pip install python-decouple
 
 # CONFIGURAR API google maps
 
@@ -127,4 +129,39 @@ git push -u origin main
 …or push an existing repository from the command line
 git remote add origin https://github.com/cordobadanieleduardo/desarrollo_elim_logistica.git
 git branch -M main
+git push -u origin main
+
+github.com
+cordobadanieleduardo@gmail.com
+Git2025*
+
+heroku.com
+Daniel3166186116*
+
+
+
+Luego de haber separado los archivos de configuración, 
+ya no podremos levantar de la misma forma el proyecto en local,
+ahora tendremos que indicar qué archivo 
+
+setting debe utilizar de la siguiente forma:
+
+manage.py runserver --settings=app.local_settings
+
+
+Como podrás ver, a manage.py le adjuntamos 
+el parámetro --settings con el valor de la nueva configuración del archivo settings local.
+
+Debes notar, que la ruta y nombre del archivo settings local abarca, 
+la aplicación llamada app, un punto y luego el nombre del archivo settings,
+sin extensión, ésto para que lo tomes en cuenta y modifiques 
+según tu proyecto, ya sea app o el nombre del archivo
+
+
+echo "# elim-deployv1" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/cordobadanieleduardo/elim-deployv1.git
 git push -u origin main

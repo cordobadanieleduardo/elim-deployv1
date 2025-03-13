@@ -3,8 +3,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+#from django_userforeignkey.models.fields import UserForeignKey
 import uuid
-from bases.models import ClaseModelo
+from bases.models import ClaseModelo, ClaseModelo2
 
 # Trayecto models.
 class Trayecto(ClaseModelo):
@@ -203,22 +204,21 @@ class Museo(models.Model):
     def __str__(self):
         return self.nombre
 
-
-
-
-class Parametro(ClaseModelo):      
+class Parametro(ClaseModelo2):      
     nombre = models.CharField(max_length=200,null=False,blank=False)
     valor = models.DecimalField(max_digits=9, decimal_places=2)
+    
+    def __str__(self):
+        return f'{self.nombre}={self.valor} '
+
     class Meta:
         verbose_name_plural = 'Parametros'
-
-
-class Registro(ClaseModelo):
-    class Medio_pago(models.TextChoices):
+class Medio_pago(models.TextChoices):
         CONTADO = "CONTADO", _("Contado")
         CREDITO = "CREDITO", _("Crédito")
         TRANSFERENCIA = "TRANSFERENCIA", _("Transferencia")
-
+class Registro(ClaseModelo):
+    
     numero_registo = models.UUIDField(default=uuid.uuid4,max_length=80)    
     fecha = models.DateTimeField(null=True,blank=True)
     direccion = models.CharField(max_length=200,null=False,blank=False)
@@ -238,23 +238,24 @@ class Registro(ClaseModelo):
     transferencia = models.DecimalField(max_digits=9, decimal_places=2,default=0.0,blank=True)
     porcentaje = models.DecimalField(max_digits=9, decimal_places=2,default=0.0,blank=True)
     def __str__(self):
-        # return "%s %s" % (self.trayecto, self.cliente)        
+        return f"{self.direccion}, {self.placa}"        
+        # return "%s %s" % (self.direccion, self.placa)        
         # return f'{self.placa}'
-        return '{}'.format(self.placa)
+        # return '{}'.format(self.placa)
     
     def save(self):        
         self.porcentaje = Parametro.objects.get(pk=1).valor
         self.costo = float(self.valor) * float(self.porcentaje) or 0.25
         self.neto = float(self.valor) - float(self.costo)
-        if self.medio_pago =='CONTADO':
+        if self.medio_pago == Medio_pago.CONTADO:
             self.credito = float(0)
             self.transferencia = float(0)
             self.efectivo = float(self.valor)
-        elif self.medio_pago == 'CREDITO':
+        elif self.medio_pago == Medio_pago.CREDITO:
             self.credito = float(self.valor)
             self.transferencia = float(0)
             self.efectivo = float(0)
-        elif self.medio_pago == 'TRANSFERENCIA':
+        elif self.medio_pago == Medio_pago.TRANSFERENCIA:
             self.credito = float(0)
             self.transferencia = float(self.valor)        
             self.efectivo = float(0)
@@ -336,3 +337,20 @@ class GastoConductor(ClaseModelo):
     def save(self):
         self.placa = self.placa.upper()
         return super().save()
+    
+
+class Viaje(models.Model): 
+    from_location = models.ForeignKey(Trayecto, related_name = 'from_location', on_delete=models.CASCADE)
+    to_location = models.ForeignKey(Registro, related_name = 'to_location', on_delete=models.CASCADE)
+    mode = models.CharField(max_length=200, blank=True, null=True)
+    distance_km_text = models.CharField(max_length=20, blank=True, null=True)
+    distance_km = models.DecimalField(max_digits=10, decimal_places=2)
+    duration_mins_text = models.CharField(max_length=20, blank=True, null=True)
+    duration_mins = models.DecimalField(max_digits=10, decimal_places=2)
+    duration_traffic_mins_text = models.CharField(max_length=20, blank=True, null=True)
+    duration_traffic_mins = models.DecimalField(max_digits=10, decimal_places=2,blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True,blank=True, null=True)
+    edited_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.id

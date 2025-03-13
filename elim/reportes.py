@@ -8,6 +8,11 @@ from django.utils import timezone
 from django.db.models import Avg, Max, Min,Sum,Count
 from .models import Registro
 import datetime
+from django.db.models import TextField
+from django.db.models import OuterRef,Subquery
+from django.db.models.functions import JSONObject
+from django.contrib.postgres.expressions import ArraySubquery
+
 def link_callback(uri, rel):
     """
     Convert HTML URIs to absolute system paths so xhtml2pdf can access those
@@ -29,13 +34,8 @@ def link_callback(uri, rel):
 
     # make sure that file exists
     if not os.path.isfile(path):
-            raise Exception('media URI must start with %s or %s' % (sUrl, mUrl))
+        raise Exception(f'media URI must start with {sUrl} or {mUrl}')
     return path
-
-from django.db.models import TextField
-from django.db.models import OuterRef,Subquery
-from django.db.models.functions import JSONObject
-from django.contrib.postgres.expressions import ArraySubquery
 
 def reporte_registros(request):
     template_path = 'reportes/repo_print_all.html'
@@ -78,7 +78,7 @@ def reporte_registros(request):
     pisaStatus = pisa.CreatePDF(html, dest=response, link_callback=link_callback)
     # if error then show some funy view
     if pisaStatus.err:
-       return HttpResponse('We had some errors <pre>' + html + '</pre>')
+       return HttpResponse(f'Error <pre> {html}</pre>')
     return response
 
 

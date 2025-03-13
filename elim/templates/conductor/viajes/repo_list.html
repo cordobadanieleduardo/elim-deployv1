@@ -1,0 +1,149 @@
+{% extends 'base/base.html' %}
+{% block page_content %}
+{% load humanize %}
+<div class="card shadow mb-4">
+    <!-- Card Header - Dropdown -->
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Reporte</h6>
+        <div class="dropdown no-arrow">
+            
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                <div class="dropdown-header">Acciones:</div>
+                <a class="dropdown-item" href="{% url 'elim:gasto_new' %}">
+                    <i class="far fa-calendar-plus"></i> Nuevo</a>
+            </div>
+        </div>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+        <!-- <div class="titleholder"> -->
+            <!-- <div class="title text-uppercase"> Vehiculos Elim Logística</div> -->
+            <!-- <div class="title"> {% if location %} para {{location.direccion}} ({{label}}) {% endif %}</div>  -->
+        <!-- </div> -->
+
+        <!-- Card menu -->
+        <!-- <div class="alert alert-info"> -->
+            <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_new' %}')" href="#"> Nuevo servicio</a> -->
+            <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:vehiculo_new' %}')" href="#"> Nuevo vehiculo</a> -->
+            <!-- <a class="btn btn-default" href="{% url 'elim:reg_direccion_new' %}"> Direcciones</a> -->
+            <!-- <a class="btn btn-default" href="{% url 'elim:vehiculo_list' %}"> Vehiculos</a>       -->
+        <!-- </div> -->
+        {% if not obj %}
+        <div class="alert alert-info"> Ningun registro disponible </div>
+        {% endif %}
+        <div class="buttons-toolbar">
+            <a class="dropdown-item" href="{% url 'elim:gasto_new' %}">
+                <i class="far fa-calendar-plus"></i> 
+                Nuevo
+            </a>
+        </div>
+
+        <table
+            id="table"
+            data-locale="es-ES"
+            data-toggle="table"
+            data-toolbar="#toolbar"
+            data-search="true"
+            data-show-refresh="true"
+            data-show-toggle="true"
+            data-show-fullscreen="true"
+            data-show-columns="true"
+            data-show-columns-toggle-all="true"
+            data-detail-view="true"
+            data-show-export="true"
+            data-click-to-select="true"
+            data-detail-formatter="detailFormatter"
+            data-minimum-count-columns="2"
+            data-show-pagination-switch="true"
+            data-pagination="true"
+            data-id-field="id"
+            data-page-list="[10, 25, 50, 100, all]"
+            data-show-footer="true"
+            data-side-pagination="server"
+            data-toolbar=".buttons-toolbar"
+        >
+            <thead>
+                <th data-sortable="true" data-field="fecha">Fecha</th>
+                <th data-sortable="true" data-field="origen">Origen</th>
+                <th data-sortable="true" data-field="destino">Destino</th>
+                <th data-sortable="true" data-field="trayecto">Trayecto</th>
+                <th> Distancia </th>
+                <th> Duración </th>
+                <th> Duracion con tráfico </th>
+                <th data-sortable="true" data-field="placa">Placa</th>
+                <th data-sortable="true" data-field="conductor">Conductor</th>
+                <th data-sortable="true" data-field="vehiculo"> Vehiculo</th>
+                <!-- <th>Cantidad</th> -->
+                <th data-sortable="true" data-field="efectivo">Efectivo</th>
+                <th data-sortable="true" data-field="credito">Crédito</th>
+                <th data-sortable="true" data-field="transferencia">Transferencia</th>
+                <th data-sortable="true" data-field="total">Total</th>
+            </thead>
+            <tbody>
+                {% for item in obj %}
+                <tr>
+                    <!-- <td> -->
+                        <!-- <a class="btn btn-warning btn-circle" href="{% url 'elim:gasto_edit' item.pk %}"> -->
+                            <!-- <i class="far fa-edit"></i> -->
+                        <!-- </a> -->
+                        <!-- <a href="{{item.imagen.url}}" onclick="return abrir_modal('{% url 'elim:gasto_detail' item.pk %}')">VER</a> -->
+                        <!-- <a href="{{item.imagen.url}}" >VER2</a> -->
+                    <!-- </td> -->
+                    <!-- <td> <a href="{% url 'elim:vehiculo_inactivar' item.pk %}"> 
+                            {% if item.estado %} Desactivar {% else %} Activar {% endif %} 
+                        </a> 
+                    </td> -->
+                    <!-- <td> {{item.id}} </td> -->
+                    <!-- <td> {{item.fm|date:"d/m/Y H:i:s"}} </td> -->
+                    <!-- <td> {{item.hora|date:"H:i:s"}} </td> -->
+                    <td> {{item.to_location.fecha|date:"d/m/Y H:i:s"}} </td>
+                    <td> {{item.from_location}} </td>
+                    <td> {{item.to_location.direccion}} </td>
+                    <td> {{item.to_location.trayecto.direccion}} </td>
+                    <td> {{item.distance_km_text}}</td>
+                    <td> {{item.duration_mins_text}}</td>
+                    <td> {{item.duration_traffic_mins_text}}</td>
+                    <td> {{item.to_location.placa}} </td>
+                    <td> {{item.to_location.placa.conductor}} </td>
+                    <td> {{item.to_location.placa.tipo}} </td>
+                    <!-- <td> {{item.cantidad}} </td> -->
+                    <td> {{item.to_location.efectivo|intcomma}} </td>
+                    <td> {{item.to_location.credito|intcomma}} </td>
+                    <td> {{item.to_location.transferencia|intcomma}} </td>
+                    <td> {{item.to_location.valor|intcomma}} </td>
+                    <!-- <td> {{item.placa}} </td> -->
+                    <!-- <td> {{item.conductor}} </td> -->
+                    <!-- <td>   </td> -->
+
+                    <!-- <div class="embed-responsive embed-responsive-16by9">
+                        <iframe class="embed-responsive-item" src="..."></iframe>
+                    </div> -->
+
+                    <!-- <td> {{item.mecanico|yesno:"Activo,Inactivo"}} </td> -->
+                    <!-- <td> {{item.restaurante|yesno:"Activo,Inactivo"}} </td> -->
+                    <!-- <td> {{item.enfermo|yesno:"Activo,Inactivo"}} </td> -->
+                    <!-- <td> <a href="{#% url 'elim:geocoding_view' item.id %#}"> Geocode!</a> </td>                        -->
+                    <!-- <td><img src="/static/admin/img/icon-no.svg" alt="False"></td> -->
+
+                </tr>
+                {% endfor%}
+            </tbody>
+        </table>        
+    </div>
+    <div class="linkholder">
+        <a class="btn btn-default" href="{% url 'elim:gasto_list' %}"> Registros</a>
+        <!-- <a href="{% url 'elim:my_distance_view' %}"> Calcular distancias</a>  -->
+    </div>
+    <div class="linkholder">
+        <!-- <a href="{% url 'elim:my_map_view' %}"> Ir al mapa</a>  -->
+    </div>
+</div>
+{% endblock %}
+{% block js_page %}
+<script>
+</script>
+{% endblock %}
