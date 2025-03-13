@@ -20,7 +20,8 @@ class Trayecto(ClaseModelo):
     place_id = models.CharField(max_length=200,blank=True, null=True)
 
     def __str__(self):
-        return '{}'.format(self.direccion)
+        return f'{self.direccion}'
+        # return '{}'.format(self.direccion)
     
     def save(self):
         super(Trayecto,self).save()
