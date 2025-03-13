@@ -131,6 +131,9 @@ git remote add origin https://github.com/cordobadanieleduardo/desarrollo_elim_lo
 git branch -M main
 git push -u origin main
 
+gratis
+heroku ps:scale web=1
+
 github.com
 cordobadanieleduardo@gmail.com
 Git2025*
