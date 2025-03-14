@@ -257,9 +257,8 @@ class VehiculoEdit(VistaBaseEdit):
 
 @login_required(login_url="/login/")
 @permission_required("elim.change_vehiculo",login_url="/login/")
-def vehiculo_inactivar(request,pk):
-    reg = Vehiculo.objects.filter(pk=pk).first()
-    if reg:
+def vehiculo_inactivar(request,pk):    
+    if reg:= Vehiculo.objects.filter(pk=pk).first():
         reg.estado = not reg.estado
         reg.save()
         return redirect('elim:vehiculo_list')   
@@ -934,8 +933,8 @@ class GastoConductorView(SinPrivilegios, generic.ListView):
     def get_queryset(self):        
         if self.request.user.is_superuser:
             return super().get_queryset().filter(estado = True)
-        elif perfil:=PerfilConductor.objects.filter(usuario = self.request.user).first():
-            return super().get_queryset().filter(vehiculo= perfil.vehiculo, estado = True)
+        elif perfil := PerfilConductor.objects.filter(usuario = self.request.user).first():
+            return super().get_queryset().filter(vehiculo = perfil.vehiculo, estado = True)
 
 class GastoConductorNew(VistaBaseCreate):
     model=GastoConductor
