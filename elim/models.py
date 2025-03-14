@@ -36,7 +36,8 @@ class Persona(ClaseModelo):
     celular = models.CharField(max_length=10,help_text= "Número de celular")
     
     def __str__(self):
-        return '{}'.format(self.nombre)
+        # return '{}'.format(self.nombre)
+         return f'{self.nombre}'
     
     def save(self):
         super(Persona,self).save()
@@ -48,7 +49,8 @@ class Cliente(ClaseModelo):
     nombre = models.CharField(max_length=50,help_text= "Nombre del cliente")
     
     def __str__(self):
-        return '{}'.format(self.nombre)
+        # return '{}'.format(self.nombre)
+        return f'{self.nombre}'
     
     def save(self):
         super(Cliente,self).save()
@@ -62,7 +64,8 @@ class Proveedor(ClaseModelo):
     nombre = models.CharField(max_length=50,help_text= "Nombre del proveedor")
     
     def __str__(self):
-        return '{}'.format(self.nombre)
+        # return '{}'.format(self.nombre)
+        return f'{self.nombre}'
     
     def save(self):
         super(Proveedor,self).save()
@@ -75,7 +78,8 @@ class Conductor(ClaseModelo):
     nombre = models.CharField(max_length=50,help_text= "Nombre del conductor")
 
     def __str__(self):
-        return '{}'.format(self.nombre)
+        # return '{}'.format(self.nombre)
+        return f'{self.nombre}'
     
     def save(self):
         super(Conductor,self).save()
@@ -116,7 +120,7 @@ class Vehiculo(ClaseModelo):
         }
 
     def __str__(self):
-        return self.placa
+        return f'{self.placa}'
     
     def save(self):
         super(Vehiculo,self).save()
@@ -129,7 +133,8 @@ class Programador(ClaseModelo):
     nombre = models.CharField(max_length=50,help_text= "Nombre del programador")
 
     def __str__(self):
-        return '{}'.format(self.nombre)
+        # return '{}'.format(self.nombre)
+        return f'{self.nombre}'
     
     def save(self):
         super(Programador,self).save()
@@ -174,7 +179,8 @@ class Servicio(ClaseModelo):
     legalizado = models.CharField(max_length=15,choices=Legalizado,default=Legalizado.sin_legalizar,help_text= "Legalizado")
     
     def __str__(self):
-        return '{}'.format(self.placa)
+        # return '{}'.format(self.placa)
+        return f'{self.placa}'
     
     def save(self):
         super(Servicio,self).save()
@@ -301,7 +307,8 @@ class PerfilConductor(models.Model):
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
     
     def __str__(self):
-        return '{}'.format(self.vehiculo)    
+        # return '{}'.format(self.vehiculo)    
+        return f'{self.vehiculo}'
     class Meta:
         verbose_name_plural = 'Perfil de conductores'
 
