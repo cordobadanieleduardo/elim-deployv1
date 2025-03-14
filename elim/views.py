@@ -931,9 +931,11 @@ class GastoConductorView(SinPrivilegios, generic.ListView):
     context_object_name = "obj"
     ordering = ['-id']
     
-    def get_queryset(self):                
-        if PerfilConductor.objects.filter(usuario = self.request.user):                 
-            return super().get_queryset().filter(placa=PerfilConductor.objects.get(usuario = self.request.user))
+    def get_queryset(self):        
+        if self.request.user.is_superuser:
+            return super().get_queryset().filter(estado = True)
+        elif perfil:=PerfilConductor.objects.filter(usuario = self.request.user).first():
+            return super().get_queryset().filter(vehiculo= perfil.vehiculo, estado = True)
 
 class GastoConductorNew(VistaBaseCreate):
     model=GastoConductor
