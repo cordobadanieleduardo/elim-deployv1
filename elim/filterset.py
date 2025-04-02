@@ -1,6 +1,6 @@
 import django_filters
 from .views import GastoConductor
-from distutils.util import strtobool
+#from distutils.util import strtobool
 
 from .models import Medio_pago
 
