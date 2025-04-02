@@ -1,0 +1,277 @@
+{% extends 'base/base.html' %}
+{% block page_content %}
+{% load humanize %}
+<div class="card shadow mb-4">
+    <!-- Card Header - Dropdown -->
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Gastos del vehiculo</h6>
+        <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                <div class="dropdown-header">Acciones:</div>
+                <a class="dropdown-item" href="{% url 'elim:gasto_new' %}">
+                    <i class="far fa-calendar-plus"></i> Nuevo</a>
+            </div>
+        </div>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+        <div class="titleholder">
+            <!-- <div class="title text-uppercase"> Vehiculos Elim Logística</div> -->
+            <!-- <div class="title"> {% if location %} para {{location.direccion}} ({{label}}) {% endif %}</div>  -->
+        </div>
+
+        <!-- Card menu -->
+        <div class="alert alert-info">
+            <a class="btn btn-default" href="{% url 'elim:gasto_new' %}" > Registrar gasto </a>
+            <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:reg_new' %}')" href="#"> Nuevo servicio</a> -->
+            <!-- <a class="btn btn-default" onclick="return abrir_modal('{% url 'elim:vehiculo_new' %}')" href="#"> Nuevo vehiculo</a> -->
+            <!-- <a class="btn btn-default" href="{% url 'elim:reg_direccion_new' %}"> Direcciones</a> -->
+            <!-- <a class="btn btn-default" href="{% url 'elim:vehiculo_list' %}"> Vehiculos</a>       -->
+        </div>
+        {% if not obj %}
+        <div class="alert alert-info"> Ningún gasto conductor disponible </div>
+        {% endif %}
+        <table id="table" class="table table-striped table-hover dt-responsive nowrap">
+            <thead>
+                <th class="all"> Id</th>                
+                <th class="all"> Acciones</th>
+                <th>Fecha</th>                
+                <th>Estado</th>                
+                <th>Concepto</th>
+                <th>Medio de pago</th>
+                <th>N° Factura</th>
+                <th>Total</th>
+                <th>Efectivo</th>
+                <th>Crédito</th>
+                <th>Transferencia</th>
+                <th>Descripción</th>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+                <!-- <tr>
+                    <th colspan="4" style="text-align:left" >Total:<div id="id_total">0.0</div> </th>
+                    <th></th>
+                </tr> -->
+            </tfoot>
+        </table>        
+    </div>
+</div>
+
+{% endblock %}
+{% block js_page %}
+<script>
+    // Call the dataTables jQuery plugin
+    $(document).ready(function () {
+        $("#sidebarToggle").click();
+
+        // const editor = $('#table').DataTable.Editor({
+        //     // ajax: '../php/staff.php',
+        //     table: '#table',
+        //     fields: [
+        //         {
+        //             label: 'First name:',
+        //             name: 'id'
+        //         },
+        //         {
+        //             label: 'Last name:',
+        //             name: 'acciones'
+        //         },
+        //         {
+        //             label: 'Position (<code>block</code>):',
+        //             name: 'fecha',
+        //             className: 'fecha'
+        //         },
+        //         {
+        //             label: 'Office (<code>full</code>):',
+        //             name: 'estado_aceptacion',
+        //             className: 'estado_aceptacion'
+        //         },
+        //         {
+        //             label: 'Concepto',
+        //             name: 'conceto',
+        //             className: 'full block'
+        //         },
+        //         {
+        //             label: 'Medico',
+        //             name: 'medio_pago',
+        //             className: 'medio_pago'
+        //         },
+        //         {
+        //             label: 'Factura',
+        //             name: 'factura',
+        //             className: 'factura'
+        //         },
+        //         {
+        //             label: 'Total',
+        //             name: 'valor',
+        //             className: 'valor'
+        //         },
+        //         {
+        //             label: 'Efectivo',
+        //             name: 'efectivo',
+        //             className: 'efectivo'
+        //         },
+        //         {
+        //             label: 'Transferencia',
+        //             name: 'transferencia',
+        //             className: 'transferencia'
+        //         },
+        //         {
+        //             label: 'Crédito',
+        //             name: 'credito',
+        //             className:'credito'
+        //         },
+        //         {
+        //             label: 'Descripcion',
+        //             name: 'descripcion',
+        //             className: 'descripcion'
+        //         }
+        //     ]
+        // });
+
+        var table = $('#table').DataTable({
+            // "stateSave": true,
+            "scrollCollapse": false,
+            "scrollY": '300px',
+            "scrollX": true,            
+            "responsive": true,
+            "processing": true,
+            // "deferLoading": 10,
+            "search": true,
+            // "search": {
+            //     return: true
+            // },
+            // "dom":'Blfrtip',
+            "dom":'Bfrtip',
+            "serverSide" : true,
+            "deferRender" : true,
+            // "select": true,
+            // "pageLenght" : 7,
+            // "isDisplayLength": 7,
+            "paging":true,
+            "ajax":{
+                contentType: "application/json",                
+                "url": "{% url 'api:gastos_list_reload' %}",
+                "dataSrc":"data" 
+                // ,  function(response){
+                
+                //     console.log(response)
+                //     // response.recordsTotal = response.info.length;
+                //     // response.recordsFiltered = response.info.length;
+                //     // response.draw = 1;
+                //     // return response.info;
+                // }
+            },
+            // "data": function (data) {
+            //     console.log(d)
+            //     // d.pagina = 5;
+            //     // d.custom = $('#myInput').val();
+            //     // etc
+            // },
+            "columns":[  
+                {data: "id", orderable: false},              
+                {data: null, "render": function( data, type, row, full ) {                    
+                    return `                        
+                        <a href="/elim/gastos/edit/${row.id}"> <i class="far fa-edit"></i> </a>
+                        <a href="#" onclick="return abrir_modal('/elim/gastos/detail/${row.id}')">Imagen</a>`;}
+                    , orderable: false
+                },
+                {data: "fecha", "render": function( data, type, row) {                                        
+                    return luxon.DateTime.fromISO(data).setLocale('co').toFormat('F'); }
+                },
+                {data: "estado_aceptacion", "render": function( data, type, row, full) {                    
+                    return data =! null & data === true ? 'Aceptado': data=!null & data === false ? 'Rechazado' :'' }                    
+                },
+                {data: "concepto"},
+                {data: "medio_pago"},
+                {data: "factura"},
+                {data: "valor", "render": function( data, type, row ) {
+                        // print(row.data)
+                        let val = Number((data).replace(',','.')).toLocaleString();                                          
+                        if (type === 'display') {
+                            let color = 'green';
+                            if (data < 250000) {
+                                color = 'red';
+                            } else if (data < 500000) {
+                                color = 'orange';
+                            }
+                            return `<span style="color:${color}">${val}</span>`;
+                        }
+                        return val
+                    }
+                },                
+                {data: "efectivo", "render": function( data, type, row ) {
+                    var efe = Number((row.efectivo).replace(',','.')).toLocaleString();
+                    if (type === 'display') {
+                        let color = 'green';
+                        if (data < 250000) {
+                            color = 'red';
+                        } else if (data < 500000) {
+                            color = 'orange';
+                        }
+                        return `<span style="color:${color}">${efe}</span>`;
+                    }
+                    return efe; }
+                },
+                // {data: "credito", render: DataTable.render.number(null, null, 0, '$')},
+                {data: "credito"},
+                {data: "transferencia"},
+                {data: "descripcion"}
+            ],
+            "language": {
+                "decimal": ',',
+                "thousands": '.',
+                "sProcessing": "Procesando...",
+                "sLengthMenu": "Mostrar _MENU_ registros",
+                "sZeroRecords": "No se encontraron resultados",
+                "sEmptyTable": "Ningún dato disponible en esta tabla",
+                "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                "sInfoPostFix": "",
+                "sSearch": "Buscar:",
+                "sUrl": "",
+                "sInfoThousands": ",",
+                "sLoadingRecords": "Cargando...",
+                "oPaginate": {
+                "sFirst": "<span class='fa fa-angle-double-left'></span>",
+                "sLast": "<span class='fa fa-angle-double-right'></span>",
+                "sNext": "<span class='fa fa-angle-right'></span>",
+                "sPrevious": "<span class='fa fa-angle-left'></span>"
+                },
+                "oAria": {
+                "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                }
+            },
+            "columnDefs": [
+                {
+                    targets: [0],
+                    orderable: false, targets: [0],
+                },
+                { orderable: false, targets: [0], },
+                { searchable: false, targets: [11], }
+            ],
+        });
+    
+        // table.on( 'length.dt', function ( e, settings, len ) {
+        //     console.log( 'New page length: '+len );
+        // } );
+
+        // table.on('page', function () {
+        //     var info = table.page.info();
+        //     console.log(info)
+        //     $('#pageInfo').html('Showing page: ' + info.page + ' of ' + info.pages+ '-');
+        //     console.log('Showing page: ' + info.page + ' of ' + info.pages)
+
+        //     // $('#pageInfo').val(info.page)
+        // });
+
+    });
+</script>
+{% endblock %}

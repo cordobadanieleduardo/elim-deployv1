@@ -3,9 +3,11 @@ from django.contrib.admin.widgets import AutocompleteSelect
 from django.core.exceptions import ValidationError
 from django.contrib import admin
 from django import forms
+from django.utils.translation import gettext_lazy as _
+from datetime import datetime,date
+
 from .models import *
 
-import datetime
 
 
 class ClienteForm(forms.ModelForm):
@@ -119,7 +121,7 @@ class RegistroForm(forms.ModelForm):
 
 class ServicioForm(forms.ModelForm):
 
-    fecha = forms.DateField(initial=datetime.datetime.today)    
+    fecha = forms.DateField(initial=datetime.today())    
     # cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(estado=True))
     # placa = forms.ModelChoiceField(queryset=Vehiculo.objects.filter(estado=True))    
     # programador = forms.ModelChoiceField(queryset=Programador.objects.filter(estado=True))    
@@ -321,6 +323,7 @@ class DistanceForm(forms.ModelForm):
 
 
 class VehiculoForm(forms.ModelForm):
+    # hora = forms.CharField(label="Hora:", required=True,  min_length=3, max_length=21, widget=forms.DateTimeInput())
     # direccion = forms.CharField(max_length=100, required=True,
     #                             widget=forms.TextInput(
     #                                 attrs={'pattern' :"\\S(.*\\S)?" }))
@@ -333,8 +336,8 @@ class VehiculoForm(forms.ModelForm):
         model = Vehiculo
         fields = ['tipo','placa','conductor','hora','disponibilidad','mecanico','restaurante','enfermo']
         exclude = ['um','fm','uc','fc','ubicacion']
-        # labels = {'direccion':'Dirección','estado':'Estado','zipcode':'Código postal','ciudad':'Ciudad','pais':'Pais','lat':'Latitud','lng':'Longitud','club':'Club'}
-        # widget = {'direccion': forms.TextInput , 'zipcode': forms.NumberInput, }
+        labels = {'tipo':'Tipo','placa':'Placa','conductor':'Conductor','hora':'Hora','disponibilidad':'Disponibilidad','mecanico':'Mecanico','restaurante':'Restaurante','enfermo':'Hospital'}
+        # widget = {'mecanico': forms.TextInput , 'restaurante': forms.BooleanField, 'enfermo': forms.NumberInput, }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
@@ -343,6 +346,7 @@ class VehiculoForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({'class':'form-control'})
             
         self.fields['placa'].widget.attrs['class'] = 'form-control text-uppercase'
+        self.fields['placa'].widget.attrs['readonly'] = True
         # self.fields['direccion'].widget.attrs['maxlength'] = 80 
         # self.fields['pais'].widget.attrs['value'] = 'Colombia'
         # self.fields['ciudad'].widget.attrs['value'] = 'Bogotá'
@@ -351,27 +355,45 @@ class VehiculoForm(forms.ModelForm):
         # self.fields['zipcode'].widget.attrs['type'] = 'number'
         # self.fields['zipcode'].widget.attrs['max'] = '100000'
 
+class GastoConductorFormFilter(forms.Form):
+    fecha = forms.DateField(initial=datetime.now(),required=False) 
+    factura = forms.CharField(required=False, max_length=15) 
+    medio_pago = forms.ChoiceField(choices=Medio_pago, required=False,)
+    class Meta:
+        exclude = ['medio_pago']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args,**kwargs)
+        for field in iter(self.fields):
+            self.fields[field].widget.attrs.update({'class':'form-control'})   
+        self.fields['fecha'].widget.attrs['autocomplete'] = "off"
+        self.fields['fecha'].widget.attrs['value'] = date.today().strftime("%d/%m/%Y")
+        # self.fields['factura'].widget.attrs['type'] = "search"
+    
 class GastoConductorForm(forms.ModelForm):
-    # fecha = forms.DateField(initial=datetime.datetime.today)    
+    # fecha = forms.DateField(initial=datetime.now())    
     # valor = forms.CharField(initial='', required=True,max_length=6,
     #                              widget=forms.TextInput(attrs={'max': "1000000",'min': "1000" })
     #                              )
     class Meta:
         model = GastoConductor
-        fields = ( 'fecha','valor','concepto','medio_pago','imagen')
-        exclude = ['um','fm','uc','fc','numero_registro','placa','cedula','conductor','vehiculo']
-    
-        # wiget = {
-        #     'fecha':forms.DateTimeInput(),
-        # }
+        fields = ( 'fecha','factura','valor','concepto','medio_pago','descripcion','imagen','estado_aceptacion','vehiculo',)
+        exclude = ['um','fm','uc','fc','numero_registro','placa','cedula','conductor',
+                'efectivo', 'credito', 'transferencia',
+                'usuario_aceptacion','usuario_rechazo'
+        ]
+        wiget = {
+            'descripcion':forms.TextInput(),
+        }
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
-        # self.fields['pais'].query_set = Pais.objects.all()        
         for field in iter(self.fields):
-            self.fields[field].widget.attrs.update({'class':'form-control'})
-        
-        # self.fields['valor'].validators.append(MaxValueValidator(9999999.99))
-        # self.fields['fecha'].widget.attrs['value'] = datetime.date.ctimeT
+            self.fields[field].widget.attrs.update({'class':'form-control'})        
+        self.fields['fecha'].widget.attrs['autocomplete'] = 'off'
+        self.fields['fecha'].widget.attrs['value'] = datetime.now().strftime("%d/%m/%Y %H:%M:%S") 
+        self.fields['fecha'].widget.attrs['maxlength'] = '19'
+        self.fields['fecha'].widget.attrs['required'] = 'true'
+        self.fields['descripcion'].widget.attrs['row'] = 'true'
 
     def clean_valor(self):
         valor = self.cleaned_data['valor']
@@ -380,3 +402,26 @@ class GastoConductorForm(forms.ModelForm):
         if valor >= 1000000:
             raise forms.ValidationError("El precio debe ser menor que 1.000.000 pesos")
         return valor
+    
+    
+
+
+class PanelForm(forms.Form):
+    # initial=datetime.now(),
+    fecha = forms.CharField(required=True) 
+    page =  forms.CharField(required=False) 
+    page.widget.attrs.update({'hidden':True})
+    # factura = forms.CharField(required=False, max_length=15) 
+    # medio_pago = forms.ChoiceField(choices=Medio_pago, required=False,)
+    class Meta:
+        fields=('fecha')
+        widget={'fecha': forms.DateTimeInput(), 'required':True}
+        # exclude = ['medio_pago']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args,**kwargs)
+        for field in iter(self.fields):
+            self.fields[field].widget.attrs.update({'class':'form-control'})   
+        self.fields['fecha'].widget.attrs['autocomplete'] = "off"
+        self.fields['fecha'].widget.attrs['value'] = date.today().strftime("%d/%m/%Y")
+        # self.fields['factura'].widget.attrs['type'] = "search

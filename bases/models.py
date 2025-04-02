@@ -24,3 +24,11 @@ class ClaseModelo2(models.Model):
 
     class Meta:
         abstract=True
+        
+
+# class Rol(models.Model):    
+#     nombre = models.CharField(max_length=100)
+#     estado = models.BooleanField(default=True)
+    
+# class User(AbstractUser):
+#     rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True)

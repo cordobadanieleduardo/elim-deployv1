@@ -58,8 +58,12 @@
 
 {% block js_page %}
 <script>
+  $(function () {
+    // $("#sidebarToggle").click();
+  });
   // Call the dataTables jQuery plugin
   $(document).ready(function() {
+    $("#sidebarToggle").click();
     $('.table').DataTable({
       "language": {
         "sProcessing": "Procesando...",

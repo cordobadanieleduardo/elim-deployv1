@@ -62,7 +62,8 @@ urlpatterns = [
     
 
     path('gastos/',views.GastoConductorView.as_view(), name='gasto_list'),
-    path('gastos/new',views.GastoConductorNew.as_view(), name='gasto_new'),
+    # path('gastos/',views.gastoConductorView, name='gasto_list'),
+    path('gastos/new/',views.GastoConductorNew.as_view(), name='gasto_new'),
     path('gastos/edit/<int:pk>',views.GastoConductorEdit.as_view(), name='gasto_edit'),
     path('gastos/detail/<int:pk>',views.GastoConductorDetailView.as_view(), name='gasto_detail'),
     
@@ -78,29 +79,16 @@ urlpatterns = [
     path('conductor/viaje/reporte/list/',views.ViajeView.as_view(), name='repo_viaje_list'),    
     path('conductor/viaje/reporte/detail/<int:pk>',views.ViajeDetailView.as_view(), name='repo_viaje_detail'),
     
+    path('status/',views.StatusDetailView.as_view(), name='status_list'),
+    path('status/<str:pk>/',views.vehiculo_activar_inactivar, name='status_activarinact_list'),
+    # path('status/<str:pk>/(?:page(?P<page_number>[0-9]+)/)?$',views.vehiculo_activar_inactivar, name='status_activarinact_list'),
+    path('status/mecanico/<str:pk>/',views.vehiculo_cambiar_mecanico, name='status_cambiar_mecanico_list'),
+    path('status/restaurante/<str:pk>/',views.vehiculo_cambiar_restaurante, name='status_cambiar_restaurante_list'),
+    path('status/enfermo/<str:pk>/',views.vehiculo_cambiar_enfermo, name='status_cambiar_enfermo_list'),
+    path('status/color/<str:pk>/',views.vehiculo_status_disponibilidad, name='status_cambiar_color_list'),
+    path('status/edit/<str:pk>/',views.StatusEdit.as_view(), name='status_edit'),
     
-    
-    # path('reporte/<int:compra_id>/imprimir', imprimir_compra,name="compras_print_one"),
-
-#     path('subcategorias/',SubCategoriaView.as_view(), name='subcategoria_list'),
-#     path('subcategorias/new',SubCategoriaNew.as_view(), name='subcategoria_new'),
-#     path('subcategorias/edit/<int:pk>',SubCategoriaEdit.as_view(), name='subcategoria_edit'),
-#     path('subcategorias/delete/<int:pk>',SubCategoriaDel.as_view(), name='subcategoria_del'),
-
-#     path('marcas/',MarcaView.as_view(), name="marca_list"),
-#     path('marcas/new',MarcaNew.as_view(), name="marca_new"),
-#     path('marcas/edit/<int:pk>',MarcaEdit.as_view(), name="marca_edit"),
-#     path('marcas/inactivar/<int:id>',marca_inactivar, name="marca_inactivar"),
-
-#     path('um/',UMView.as_view(), name="um_list"),
-#     path('um/new',UMNew.as_view(), name="um_new"),
-#     path('um/edit/<int:pk>',UMEdit.as_view(), name="um_edit"),
-#     path('um/inactivar/<int:id>',um_inactivar, name="um_inactivar"),
-
-#     path('productos/',ProductoView.as_view(), name="producto_list"),
-#     path('productos/new',ProductoNew.as_view(), name="producto_new"),
-#     path('productos/edit/<int:pk>',ProductoEdit.as_view(), name="producto_edit"),
-#     path('productos/inactivar/<int:id>',producto_inactivar, name="producto_inactivar"),
+    path('panel/',views.panelView, name='panel_view'),
 ]
 
 
@@ -109,6 +97,7 @@ router.register("api/paises", views.PaisesViewSet, basename="paises")
 router.register("api/museos", views.MuseoViewSet, basename="museos_list")
 router.register("api/clientes", views.ClientesViewSet, basename="clientes")
 router.register("v1/clientes/", views.ClientesViewSet, basename="clientes_list")
+# router.register("v1/gastos", views.GastoConductorViewSet, basename="gastos__list")
 
 urlpatterns += router.urls
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

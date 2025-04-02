@@ -90,7 +90,6 @@
   }
 </style>
 <script>
-
   let x = document.querySelectorAll(".myDIV");    
   for (let i = 0, len = x.length; i < len; i++) {
       let num = Number((x[i].innerHTML).replace(',','.')).toLocaleString();
@@ -112,8 +111,13 @@
     // decimals: 2, 
   // });
 
+  $(function () {
+    // $("#sidebarToggle").click();
+  });
+
   // Call the dataTables jQuery plugin
   $(document).ready(function () {
+    $("#sidebarToggle").click();
     $('.table').DataTable({
       // paging: false,
       scrollCollapse: true,

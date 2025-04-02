@@ -50,6 +50,7 @@
                 <th>Mecanico</th>
                 <th>Restaurante</th>
                 <th>Enfermo</th>
+                <th></th>
             </thead>
             <tbody>
                 {% for item in obj %}
@@ -96,6 +97,11 @@
     // Call the dataTables jQuery plugin
     $(document).ready(function () {
         $('.table').DataTable({
+            paging: true,
+            scrollCollapse: true,
+            scrollY: '280px',
+            scrollX: true,
+            responsive: true,
             "language": {
                 "sProcessing": "Procesando...",
                 "sLengthMenu": "Mostrar _MENU_ registros",

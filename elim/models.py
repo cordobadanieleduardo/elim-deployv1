@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-#from django_userforeignkey.models.fields import UserForeignKey
+from django_userforeignkey.models.fields import UserForeignKey
 import uuid
 from bases.models import ClaseModelo, ClaseModelo2
 
@@ -21,7 +21,6 @@ class Trayecto(ClaseModelo):
 
     def __str__(self):
         return f'{self.direccion}'
-        # return '{}'.format(self.direccion)
     
     def save(self):
         super(Trayecto,self).save()
@@ -36,8 +35,7 @@ class Persona(ClaseModelo):
     celular = models.CharField(max_length=10,help_text= "Número de celular")
     
     def __str__(self):
-        # return '{}'.format(self.nombre)
-         return f'{self.nombre}'
+        return f'{self.nombre}'
     
     def save(self):
         super(Persona,self).save()
@@ -49,7 +47,6 @@ class Cliente(ClaseModelo):
     nombre = models.CharField(max_length=50,help_text= "Nombre del cliente")
     
     def __str__(self):
-        # return '{}'.format(self.nombre)
         return f'{self.nombre}'
     
     def save(self):
@@ -58,14 +55,13 @@ class Cliente(ClaseModelo):
     class Meta:
         ordering = ['nombre']
         verbose_name_plural = 'Clientes'
-        
+
 
 class Proveedor(ClaseModelo):
     nombre = models.CharField(max_length=50,help_text= "Nombre del proveedor")
     
     def __str__(self):
-        # return '{}'.format(self.nombre)
-        return f'{self.nombre}'
+        return '{}'.format(self.nombre)
     
     def save(self):
         super(Proveedor,self).save()
@@ -107,9 +103,9 @@ class Vehiculo(ClaseModelo):
     conductor = models.ForeignKey(Conductor,on_delete=models.PROTECT,max_length=50)    
     hora = models.DateTimeField()
     disponibilidad = models.CharField(max_length=10,choices=Disponibilidad,default=Disponibilidad.INACTIVO)
-    mecanico = models.BooleanField(default=False)
-    restaurante = models.BooleanField(default=False)
-    enfermo = models.BooleanField(default=False)
+    mecanico = models.BooleanField(default=False,blank=True, null=True)
+    restaurante = models.BooleanField(default=False,blank=True, null=True)
+    enfermo = models.BooleanField(default=False,blank=True, null=True)
     ubicacion = models.ForeignKey(Trayecto,on_delete=models.RESTRICT,blank=True, null=True)
 
 
@@ -120,9 +116,10 @@ class Vehiculo(ClaseModelo):
         }
 
     def __str__(self):
-        return f'{self.placa}'
+        return self.placa
     
     def save(self):
+        self.placa = self.placa.upper()
         super(Vehiculo,self).save()
 
     class Meta:
@@ -133,8 +130,7 @@ class Programador(ClaseModelo):
     nombre = models.CharField(max_length=50,help_text= "Nombre del programador")
 
     def __str__(self):
-        # return '{}'.format(self.nombre)
-        return f'{self.nombre}'
+        return '{}'.format(self.nombre)
     
     def save(self):
         super(Programador,self).save()
@@ -179,8 +175,8 @@ class Servicio(ClaseModelo):
     legalizado = models.CharField(max_length=15,choices=Legalizado,default=Legalizado.sin_legalizar,help_text= "Legalizado")
     
     def __str__(self):
-        # return '{}'.format(self.placa)
         return f'{self.placa}'
+        # return '{}'.format(self.placa)
     
     def save(self):
         super(Servicio,self).save()
@@ -224,8 +220,9 @@ class Medio_pago(models.TextChoices):
         CONTADO = "CONTADO", _("Contado")
         CREDITO = "CREDITO", _("Crédito")
         TRANSFERENCIA = "TRANSFERENCIA", _("Transferencia")
-class Registro(ClaseModelo):
-    
+        CHIP = "CHIP", _("Chip")
+
+class Registro(ClaseModelo):    
     numero_registo = models.UUIDField(default=uuid.uuid4,max_length=80)    
     fecha = models.DateTimeField(null=True,blank=True)
     direccion = models.CharField(max_length=200,null=False,blank=False)
@@ -302,49 +299,63 @@ class Distances (models.Model):
         return self.id
 
 class PerfilConductor(models.Model):
-    
     usuario = models.OneToOneField(User, on_delete=models.CASCADE)
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
     
     def __str__(self):
-        # return '{}'.format(self.vehiculo)    
         return f'{self.vehiculo}'
+        # return '{}'.format(self.vehiculo)    
     class Meta:
         verbose_name_plural = 'Perfil de conductores'
-
-
 
 class GastoConductor(ClaseModelo):    
     class Concepto(models.TextChoices):
         GASOLINA = "gasolina", _("Gasolina")
         PEAJE = "peaje", _("Peajes")
         OTRO = "otro", _("Otro")
-    
-    class Medio(models.TextChoices):
-        CONTADO = "efectivo", _("Efectivo")
-        CREDITO = "chip", _("Chip")
-
     numero_registro = models.UUIDField(default=uuid.uuid4,max_length=80)    
     fecha = models.DateTimeField(blank=True, null=True)
     concepto = models.CharField(max_length=15,choices=Concepto,default=Concepto.GASOLINA)
-    medio_pago = models.CharField(max_length=15,choices=Medio,default=Medio.CONTADO)
-    valor = models.DecimalField(max_digits=9,decimal_places=2,default=0.0,
-        validators=[MaxValueValidator(1000000), MinValueValidator(10000)])
+    factura = models.CharField(max_length=20)
+    medio_pago = models.CharField(max_length=15,choices=Medio_pago,default=Medio_pago.CONTADO)
+    valor = models.DecimalField(max_digits=9,decimal_places=2,validators=[MaxValueValidator(1000000), MinValueValidator(10000)])
+    descripcion = models.CharField(max_length=200)
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.RESTRICT)
     placa = models.CharField(max_length=6)
     cedula = models.IntegerField()
     conductor = models.CharField(blank=True,max_length=200)
     imagen = models.ImageField(upload_to="gastos")
+    # estado aceptado, rechazado    
+    efectivo = models.DecimalField(max_digits=9, decimal_places=2,default=0.0,blank=True)
+    credito = models.DecimalField(max_digits=9, decimal_places=2,default=0.0,blank=True)
+    transferencia = models.DecimalField(max_digits=9, decimal_places=2,default=0.0,blank=True)
+    estado_aceptacion = models.BooleanField(blank=True, null=True)
+    usuario_aceptacion = models.CharField(max_length=20,blank=True, null=True)
+    usuario_rechazo = models.CharField(max_length=20,blank=True, null=True)
 
     def __str__(self):
         return f'{self.fecha}'
     
     class Meta:
         verbose_name_plural = 'Gastos del conductor'
-        
+
     def save(self):
-        self.placa = self.placa.upper()
+        self.placa = self.placa.upper()        
+        if self.medio_pago == Medio_pago.CONTADO:
+            self.credito = float(0)
+            self.transferencia = float(0)
+            self.efectivo = float(self.valor)
+        elif self.medio_pago in [Medio_pago.CREDITO , Medio_pago.CHIP]:
+            self.credito = float(self.valor)
+            self.transferencia = float(0)
+            self.efectivo = float(0)
+        elif self.medio_pago == Medio_pago.TRANSFERENCIA:
+            self.credito = float(0)
+            self.transferencia = float(self.valor)        
+            self.efectivo = float(0)
+
         return super().save()
+    
     
 
 class Viaje(models.Model): 

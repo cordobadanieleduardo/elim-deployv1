@@ -1,4 +1,4 @@
-import os
+from multiprocessing.managers import BaseManager
 from django.shortcuts import get_object_or_404,render, redirect
 from django.contrib.auth.models import User
 from django.views import generic
@@ -6,35 +6,44 @@ from django.urls import reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import  DjangoFilterBackend
+from django_filters import rest_framework as filters2
 from django.http import JsonResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.utils import timezone
-from .serializers import MuseoSerializer, PaisSerializer,ClienteSerializer
+from django.db.models import Sum, Count,FloatField, IntegerField, CharField, F
+from django.db.models.functions import Cast, Coalesce
+
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required, permission_required
 
-from .models import Cliente,Proveedor,Servicio,Vehiculo \
-    ,Programador,Trayecto,Persona,Museo, Pais, Registro \
-        , Locations,Distances,PerfilConductor , GastoConductor, Viaje
-from .forms import ClienteForm,ProveedorForm,\
-                ServicioForm, MuseoForm , RegistroForm,\
-                DistanceForm, TrayectoForm, VehiculoForm,ConductorForm , GastoConductorForm ,\
-                    ViajeConductorForm
-
 from bases.views import SinPrivilegios
 from django.views import View
 from datetime import datetime
 from django.conf import settings
-    
+from django.db.models import Case, Value, When
+
+from django.core.paginator import Paginator
+from django.urls import reverse
 
 import json
 import requests
 import googlemaps
+import os
 
 
+from .models import Cliente, GastoConductor,Proveedor,Servicio,Vehiculo \
+    ,Programador,Trayecto,Persona,Museo, Pais, Registro \
+        , Locations,Distances,PerfilConductor , Viaje
+from .forms import ClienteForm,ProveedorForm,\
+                ServicioForm, MuseoForm , RegistroForm,\
+                DistanceForm, TrayectoForm, VehiculoForm,ConductorForm , GastoConductorForm ,\
+                    ViajeConductorForm, GastoConductorFormFilter, PanelForm
+
+from .serializers import MuseoSerializer, PaisSerializer,ClienteSerializer,GastoConductorSerializer 
+from .filterset import GastoConductorFilter
 
 # Create your views base.
 
@@ -93,8 +102,8 @@ class ClienteDel(SuccessMessageMixin, SinPrivilegios, generic.DeleteView):
 
 @login_required(login_url="/login/")
 @permission_required("elim.change_cliente",login_url="/login/")
-def cliente_inactivar(request,id):    
-    if cliente:= Cliente.objects.filter(pk=id).first():
+def cliente_inactivar(request,id): 
+    if cliente:=Cliente.objects.filter(pk=id).first():
         cliente.estado = not cliente.estado
         cliente.save()
         return redirect('elim:cliente_list')    
@@ -162,7 +171,7 @@ class ConductorView(SinPrivilegios, generic.ListView):
             
             # return redirect('elim:trayecto_view')
         return context
-        
+
 class ConductorEdit(VistaBaseEdit):
     permission_required = "elim.change_vehiculo"
     model = Vehiculo
@@ -217,7 +226,7 @@ class TrayectoEdit(VistaBaseEdit):
 @login_required(login_url="/login/")
 @permission_required("elim.change_trayecto",login_url="/login/")
 def direccion_inactivar(request,id):    
-    if reg := Trayecto.objects.filter(pk=id).first():
+    if reg:= Trayecto.objects.filter(pk=id).first():
         reg.estado = not reg.estado
         reg.save()
         return redirect('elim:trayecto_list')   
@@ -255,14 +264,97 @@ class VehiculoEdit(VistaBaseEdit):
         # form.instance.uc = self.request.user
         return super().form_valid(form)
 
+
 @login_required(login_url="/login/")
 @permission_required("elim.change_vehiculo",login_url="/login/")
-def vehiculo_inactivar(request,pk):    
+def vehiculo_status_disponibilidad(request,pk):
+    fecha = request.GET.get('fecha')
+    page = request.GET.get('page')
+    url = redirect('elim:panel_view')        
+    reg= Vehiculo.objects.get(pk=pk)
+    if reg and request.method == 'GET':
+        if reg.disponibilidad == Vehiculo.Disponibilidad.ACTIVO:
+            reg.disponibilidad = Vehiculo.Disponibilidad.INACTIVO            
+            reg.save()    
+            return redirect(f'{url.url}?page={page}&fecha={fecha}')   
+        if reg.disponibilidad == Vehiculo.Disponibilidad.INACTIVO:
+            reg.disponibilidad = Vehiculo.Disponibilidad.ROJO
+            reg.save()                     
+            return redirect(f'{url.url}?page={page}&fecha={fecha}')    
+        if reg.disponibilidad == Vehiculo.Disponibilidad.ROJO:
+            reg.disponibilidad = Vehiculo.Disponibilidad.VERDE
+            reg.save()                
+            return redirect(f'{url.url}?page={page}&fecha={fecha}')     
+        if reg.disponibilidad == Vehiculo.Disponibilidad.VERDE:
+            reg.disponibilidad = Vehiculo.Disponibilidad.ACTIVO
+            reg.save()                     
+            return redirect(f'{url.url}?page={page}&fecha={fecha}')              
+    return HttpResponse("FAIL")
+
+@login_required(login_url="/login/")
+@permission_required("elim.change_vehiculo",login_url="/login/")
+def vehiculo_cambiar_mecanico(request,pk):
+    if request.method == 'GET':              
+        if reg:= Vehiculo.objects.get(pk=pk):
+            reg.mecanico = not reg.mecanico
+            reg.save()
+            fecha = request.GET.get('fecha')
+            page = request.GET.get('page')
+            url = redirect('elim:panel_view')     
+            return redirect(f'{url.url}?page={page}&fecha={fecha}')
+    return HttpResponse("FAIL")
+
+@login_required(login_url="/login/")
+@permission_required("elim.change_vehiculo",login_url="/login/")
+def vehiculo_cambiar_restaurante(request,pk):
+    if request.method == 'GET':       
+        if reg:= Vehiculo.objects.get(pk=pk):            
+            reg.restaurante = not reg.restaurante
+            reg.save()
+            fecha = request.GET.get('fecha')
+            page = request.GET.get('page')
+            url = redirect('elim:panel_view')     
+            return redirect(f'{url.url}?page={page}&fecha={fecha}')  
+    return HttpResponse("FAIL")
+
+@login_required(login_url="/login/")
+@permission_required("elim.change_vehiculo",login_url="/login/")
+def vehiculo_cambiar_enfermo(request,pk):
+    if request.method == 'GET':       
+        if reg:= Vehiculo.objects.get(pk=pk):            
+            reg.enfermo = not reg.enfermo
+            reg.save()
+            fecha = request.GET.get('fecha')
+            page = request.GET.get('page')
+            url = redirect('elim:panel_view')     
+            return redirect(f'{url.url}?page={page}&fecha={fecha}')  
+    return HttpResponse("FAIL")
+
+@login_required(login_url="/login/")
+@permission_required("elim.change_vehiculo",login_url="/login/")
+def vehiculo_activar_inactivar(request,pk):
+    if request.method == 'GET':       
+        if reg:= Vehiculo.objects.get(pk=pk):            
+            reg.estado = not reg.estado
+            reg.save()            
+            fecha = request.GET.get('fecha')
+            page = request.GET.get('page')
+            url = redirect('elim:panel_view')     
+            return redirect(f'{url.url}?page={page}&fecha={fecha}')  
+    return HttpResponse("FAIL")
+
+@login_required(login_url="/login/")
+@permission_required("elim.change_vehiculo",login_url="/login/")
+def vehiculo_inactivar(request,pk):     
     if reg:= Vehiculo.objects.filter(pk=pk).first():
         reg.estado = not reg.estado
         reg.save()
-        return redirect('elim:vehiculo_list')   
+        fecha = request.GET.get('fecha')
+        page = request.GET.get('page')
+        url = redirect('elim:panel_view')     
+        return redirect(f'{url.url}?page={page}&fecha={fecha}') 
     return HttpResponse("FAIL")
+
 
 # Bloque views proveedor.
 
@@ -420,7 +512,7 @@ def reg_add_edit(request,id=None):
         if reg_form.is_valid():
             reg.save()            
             messages.success(request,'Servicio actualizado')
-            return redirect('elim:reg_list')
+            return redirect('elim:panel_view')
         else:
             print(reg_form.errors)
     elif id:
@@ -445,7 +537,7 @@ def reg_add_edit(request,id=None):
         'obj':reg,
         'clientes':Cliente.objects.filter(estado=True),
         'trayectos':Trayecto.objects.filter(estado=True), 
-        'placas':Vehiculo.objects.filter(estado=True),
+        'placas':Vehiculo.objects.filter(),
         'solicitados_por':Persona.objects.filter(estado=True),                
         'google_api_key':settings.GOOGLE_API_KEY,
         'base_country':settings.BASE_COUNTRY
@@ -597,6 +689,15 @@ class ClientesViewSet(viewsets.ModelViewSet):
     search_fields = ["nombre"]
     ordering_fields = '__all__'
 
+# class GastoConductorViewSet(viewsets.ModelViewSet):
+#     serializer_class = GastoConductorSerializer
+#     queryset = GastoConductor.objects.all()
+#     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+#     filterset_fields = ['id', "placa"]
+#     search_fields = ["placa"]
+#     ordering_fields = '__all__'
+
+
 
 class HomeTrayectosView(generic.ListView):
     template_name = "trayectos/home.html"
@@ -648,7 +749,21 @@ class MapView(View):
 
     def get(self,request): 
         # eligable_locations = Trayecto.objects.filter(place_id__isnull=False)
-        eligable_locations = Registro.objects.filter()
+        # eligable_locations = Registro.objects.exclude(latitud__isnull=True,longitud__isnull=True)
+        page_number = request.GET.get("page")
+        date = datetime.now().replace(hour=0,minute=0,second=0,microsecond=0)        
+        if fecha:=request.GET.get('fecha'):                
+            try:            
+                date = datetime.strptime(fecha,'%d/%m/%Y').replace(hour=0,minute=0,second=0,microsecond=0)
+            except Exception as e:
+                print('parametro fecha error',e)
+                
+        fecha = f'{date.day}/{date.month}/{date.year}'
+        eligable_locations = Registro.objects.filter(
+            # latitud__isnull=False,
+            # longitud__isnull=False,
+            fecha__range=(date, date.replace(
+                hour=23,minute=59,second=59,microsecond=999999))).order_by("-fecha")
         locations = []
         registros = []
         for a in eligable_locations: 
@@ -658,28 +773,65 @@ class MapView(View):
                 'direccion': str(a.direccion),
                 'celular': str(a.celular),
                 'cliente': str(a.cliente),
-                'valor':float(a.valor),
-                'type': 'home'
+                'valor': '$ '+"{:,.2f}".format(float(a.valor)),
+                'type': 'home',
+                'medio_pago': a.medio_pago,
             }
             locations.append(data)
             registros.append(data)
-        eligable_locations = Vehiculo.objects.filter()
+        eligable_vehi = Vehiculo.objects.filter(
+            ubicacion_id__isnull=False).annotate(
+            color=Case(
+                When(disponibilidad=Vehiculo.Disponibilidad.ACTIVO, then=Value("blue")),
+                When(disponibilidad=Vehiculo.Disponibilidad.INACTIVO, then=Value("black")),
+                When(disponibilidad=Vehiculo.Disponibilidad.ROJO, then=Value("red")),
+                When(disponibilidad=Vehiculo.Disponibilidad.VERDE, then=Value("green")),
+                default=Value("black")
+                ), icon=Case(
+                When(tipo=Vehiculo.Tipo.MINIVAN, then=Value("car")),
+                When(tipo=Vehiculo.Tipo.VAN, then=Value("truck")),
+                When(tipo=Vehiculo.Tipo.CAMION, then=Value("truck-loading")),
+                When(tipo=Vehiculo.Tipo.ESTACAS, then=Value("truck-monster")),
+                default=Value("train"),
+                ), color_mecanico=Case(
+                When(mecanico=True, then=Value("red")),
+                When(mecanico=False, then=Value("black")),         
+                default=Value("blue"),
+                ), color_restaurante=Case(
+                When(restaurante=True, then=Value("green")),
+                When(restaurante=False, then=Value("black")),         
+                default=Value("blue"),
+                ), color_enfermo=Case(
+                When(enfermo=True, then=Value("green")),
+                When(enfermo=False, then=Value("black")),         
+                default=Value("blue")),) 
         vehiculos = []
-        for a in eligable_locations: 
-            ubicacion = Trayecto.objects.get(pk=a.ubicacion_id)
+        for v in eligable_vehi: 
+            ubicacion = Trayecto.objects.get(pk=v.ubicacion_id)
             data = {
                 'lat': float(ubicacion.lat), 
                 'lng': float(ubicacion.lng), 
                 'direccion': str(ubicacion.direccion),
-                'celular': str(a.conductor),
-                'cliente': str(a.disponibilidad),
-                'valor': str(a.placa),
-                'type': 'truck'
+                'celular': str(v.conductor),
+                'cliente': str(v.disponibilidad),
+                'valor': str(v.placa),
+                'type': 'truck',
+                'tipo': v.tipo,
+                'color': v.color,
+                'icon': v.icon,
+                'conductor': v.conductor.nombre,
+                'mecanico': 'Si' if v.mecanico  else 'No',
+                'enfermo': 'Si' if v.enfermo   else 'No',
+                'restaurante': 'Si' if v.restaurante   else 'No',
             }
             # <i class="fa-solid fa-car-side"></i>
             locations.append(data)
             vehiculos.append(data)
+        form = PanelForm()
+        if self.request.method == 'GET':            
+            form = PanelForm(self.request.GET)
         context = {
+            "form":form,
             "key":settings.GOOGLE_API_KEY, 
             "locations": locations,
             "registros":registros,
@@ -837,7 +989,8 @@ class MapConductorView(View):
                 duration_traffic_mins = duration_in_traffic_minutes
             )
             messages.success(request,'Servicio actualizado')
-            obj.save()            
+            obj.save() 
+            #self._extracted_from_post_4(form, request)           
         else:
             messages.success(request,'Error al intentar calcular la distancia') 
             print(form.errors)
@@ -929,12 +1082,15 @@ class GastoConductorView(SinPrivilegios, generic.ListView):
     template_name = "gastos/gasto_list.html"
     context_object_name = "obj"
     ordering = ['-id']
+    serializer_class = GastoConductorSerializer
+    filter_backends = (filters2.DjangoFilterBackend,)
+    filterset_fields = ('fecha', 'factura')
     
-    def get_queryset(self):        
-        if self.request.user.is_superuser:
-            return super().get_queryset().filter(estado = True)
-        elif perfil := PerfilConductor.objects.filter(usuario = self.request.user).first():
-            return super().get_queryset().filter(vehiculo = perfil.vehiculo, estado = True)
+    def get_context_data(self, **kwargs):    
+        context = super().get_context_data(**kwargs)
+        context["form"] = GastoConductorFormFilter(self.request.GET)
+        return context
+
 
 class GastoConductorNew(VistaBaseCreate):
     model=GastoConductor
@@ -945,34 +1101,37 @@ class GastoConductorNew(VistaBaseCreate):
     success_message="Gasto creado satisfactoriamente"
     permission_required="elim.add_gastoconductor"
 
+    # def get(self, request, *args, **kwargs):
+    #     self.object = self.get_object()
+    #     context = self.get_context_data(object=self.object)
+    #     return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        registro = GastoConductor
-        registro.fecha = datetime.now
-        context ['obj'] = registro
+        context = super().get_context_data(**kwargs)        
+        perfil=PerfilConductor.objects.filter(usuario = self.request.user).first()
+        if perfil and self.request.user.is_superuser == False:
+            vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo.pk)
+            context ['obj'] = GastoConductor(fecha = datetime.now(), vehiculo=vehiculo)
         return context
     
     def form_invalid(self, form, **kwargs):
         context = super().get_context_data(**kwargs)
-        registro = GastoConductor
-        if self.request.POST:
-            form = GastoConductorForm(self.request.POST, self.request.FILES)
-            registro.fecha = self.request.POST.get('fecha')
-            registro.valor = self.request.POST.get('valor')
-        context ['obj'] = registro
-        context ['form'] = form
         return render(self.request, self.template_name, context)
     
     def form_valid(self, form):
-        form.instance.uc = self.request.user
-        if PerfilConductor.objects.filter(usuario = self.request.user):
-            perfil = PerfilConductor.objects.get(usuario = self.request.user)
-            vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo_id)
-            form.instance.vehiculo = vehiculo
-            form.instance.placa = perfil.vehiculo_id
-            form.instance.cedula = vehiculo.conductor.cedula
-            form.instance.conductor = vehiculo.conductor.nombre
+        form.instance.uc = self.request.user        
+        if perfil:=PerfilConductor.objects.filter(usuario = self.request.user).first():
+            vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo.pk)
+            if self.request.user.is_superuser and vehiculo :
+                form.instance.cedula = 1000000
+                form.instance.conductor = 'Creado por superuser'                
+                form.instance.placa = perfil.vehiculo_id
+            # si es conductor
+            elif vehiculo :                
+                form.instance.cedula = vehiculo.conductor.cedula
+                form.instance.conductor = vehiculo.conductor.nombre
+                form.instance.placa = vehiculo.placa
+            
         return super().form_valid(form)
 
 class GastoConductorEdit(VistaBaseEdit):
@@ -986,33 +1145,57 @@ class GastoConductorEdit(VistaBaseEdit):
     
     def get(self, request, pk):
         try:
-            reg = GastoConductor.objects.get(id=pk)
+            reg = (GastoConductor.objects.get(id=pk))            
+            perfil = PerfilConductor.objects.filter(usuario = self.request.user).first()
+            # primer validacion id debe pertenecer reg.vehiculo.placa y no es super user
+            if perfil and reg and self.request.user.is_superuser == False:
+                vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo)
+                if vehiculo.placa != reg.vehiculo.placa:                                   
+                    messages.success(request,'Id no pertenece al conductor') 
+                    return redirect('elim:gasto_list')
+            # Segunda valiacion: estado del registro                
+            if reg and self.request.user.is_superuser == False and reg.estado_aceptacion in[True, False]:                
+                state_text ='Ninguno'
+                if reg.estado_aceptacion is None:
+                    state_text= 'Por revisar'                    
+                elif bool(reg.estado_aceptacion):
+                    state_text = 'Aceptado. No requiere edición'
+                else: 
+                    state_text = 'Rechazado'
+                messages.success(request,f'Gasto tiene un estado {state_text}') 
+                return redirect('elim:gasto_list')
+
             form = GastoConductorForm (instance=reg)            
-            context = {
-                'form': form,
-                'obj': reg
-            }
+            context = {'form': form,'obj': reg}
             return render(request, self.template_name, context)
         except GastoConductor.DoesNotExist:
             return JsonResponse({'error': 'Gasto del conductor no encontrado'}, status=404)
         except Exception as e:
             # Log the error here
             return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
-    
-    
+
     def form_invalid(self, form,  **kwargs):
         context = super().get_context_data(**kwargs)
         return render(self.request, self.template_name, context)
 
     def form_valid(self, form):
-        form.instance.um = self.request.user.id
-        if PerfilConductor.objects.filter(usuario = self.request.user):
-            perfil = PerfilConductor.objects.get(usuario = self.request.user)
-            vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo_id)
-            form.instance.vehiculo = vehiculo
-            form.instance.placa = perfil.vehiculo_id
-            form.instance.cedula = vehiculo.conductor.cedula
-            form.instance.conductor = vehiculo.conductor.nombre
+        if self.request.user.is_superuser == False and form.instance.estado_aceptacion == True:                
+            messages.success(self.request,'Se encuentrada aceptado el gasto ') 
+            return redirect('elim:gasto_list')
+        form.instance.um = self.request.user.id        
+        if perfil:=PerfilConductor.objects.filter(usuario = self.request.user).first():
+            vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo)
+            if vehiculo and self.request.user.is_superuser:            
+                if form.instance.estado_aceptacion is None:                
+                    form.instance.usuario_aceptacion = None
+                    form.instance.usuario_rechazo = None
+                elif bool(form.instance.estado_aceptacion):                
+                    form.instance.usuario_aceptacion = self.request.user.username                
+                else:                
+                    form.instance.usuario_rechazo = self.request.user.username        
+            elif vehiculo and self.request.user.is_superuser == False:                                        
+                form.instance.cedula = vehiculo.conductor.cedula
+                form.instance.conductor = vehiculo.conductor.nombre
         return super().form_valid(form)
 
 # def book_detail(request, book_id):
@@ -1083,3 +1266,195 @@ class ViajeView(SinPrivilegios, generic.ListView):
     # def get_queryset(self):                
     #     if PerfilConductor.objects.filter(usuario = self.request.user):                 
     #         return super().get_queryset().filter(placa=PerfilConductor.objects.get(usuario = self.request.user))
+
+
+
+class StatusDetailView(SinPrivilegios, generic.ListView):
+    permission_required = "elim.view_vehiculo"
+    model = Vehiculo
+    template_name = "status/vehiculo_list.html"
+    context_object_name = "obj"
+    ordering = "-id"
+    def get_queryset(self):
+        if perfil:=PerfilConductor.objects.filter(usuario = self.request.user).first():
+            vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo.pk)            
+            qs = Vehiculo.objects.annotate(color=Case(
+                When(disponibilidad=Vehiculo.Disponibilidad.ACTIVO, then=Value("blue")),
+                When(disponibilidad=Vehiculo.Disponibilidad.INACTIVO, then=Value("black")),
+                When(disponibilidad=Vehiculo.Disponibilidad.ROJO, then=Value("red")),
+                When(disponibilidad=Vehiculo.Disponibilidad.VERDE, then=Value("green")),
+                default=Value("black")
+                ), icon=Case(
+                When(tipo=Vehiculo.Tipo.MINIVAN, then=Value("car")),
+                When(tipo=Vehiculo.Tipo.VAN, then=Value("truck")),
+                When(tipo=Vehiculo.Tipo.CAMION, then=Value("truck-loading")),
+                When(tipo=Vehiculo.Tipo.ESTACAS, then=Value("truck-monster")),
+                default=Value("train"),
+                ), color_mecanico=Case(
+                When(mecanico=True, then=Value("red")),
+                When(mecanico=False, then=Value("black")),         
+                default=Value("black"),
+                ), color_restaurante=Case(
+                When(restaurante=True, then=Value("green")),
+                When(restaurante=False, then=Value("black")),         
+                default=Value("blue"),
+                ), color_enfermo=Case(
+                When(enfermo=True, then=Value("green")),
+                When(enfermo=False, then=Value("black")),         
+                default=Value("blue")),)
+            
+            if self.request.user.is_superuser and vehiculo:                       
+                return qs
+            elif vehiculo:
+                return qs.filter(placa=vehiculo.placa)
+            else: 
+                return None
+            
+class StatusEdit(VistaBaseEdit):
+    permission_required="elim.change_vehiculo"
+    model = Vehiculo
+    template_name = "status/vehiculo_form.html"
+    context_object_name = "obj"
+    form_class = VehiculoForm
+    success_url = reverse_lazy("elim:panel_view")
+    success_message = "Vehiculo actualizado satisfactoriamente"
+    
+    def get_absolute_url(self):
+        
+        return reverse('e', kwargs={'pk': self.pk})
+    
+    def form_invalid(self, form):
+        # print('fdaf', form)
+        return super().form_invalid(form)
+    
+    def form_valid(self, form):
+        # form.instance.uc = self.request.user
+        return super().form_valid(form)
+    
+
+# def panelView(request):
+#     vehiculos = Vehiculo.objects.filter(estado = True)
+#     registros = Registro.objects.all()
+#     conductor: BaseManager[Registro] = Registro.objects.all()
+#     # conductor = conductor.filter(estado=True).aggregate(
+#     conductor = conductor.filter(estado=True).values('placa').annotate(
+#     # conductor = conductor.annotate(placa=Value("placa")).aggregate(
+#     # conductor = conductor.annotate(
+#     # conductor = conductor.objects.values('cantidad','efectivo_total','credito_total').annotate(        
+#     # conductor = conductor.objects.alias(cantidad=Count("placa")).annotate(cantidad=F("cantidad"),).filter(estado=True).aggregate(
+#     # .annotate(
+#     #     #  placa = CharField(),
+#          cantidad= Cast(Coalesce(Count("placa"),0), output_field = IntegerField()),
+#          efectivo_total= Cast(Coalesce(Sum("efectivo"), 0.0), output_field=FloatField()) ,
+#          credito_total= Cast(Coalesce(Sum("credito"), 0.0),output_field=FloatField()) ,
+#         # Value("placa"),
+#         # Count('placa'),
+#         # Sum('efectivo'),
+#         # Sum('credito')
+#     )    
+#     # ).values_list('placa','cantidad','efectivo_total','credito_total')
+#     # ).aggregate(
+#     #     # Count('placa'),
+#     #     # Sum('efectivo'),
+#     #     # Sum('credito'),
+#     #     cantidad= Cast(Coalesce(Count("placa"),0), output_field = IntegerField()),
+#     #     efectivo_total= Cast(Coalesce(Sum("efectivo"), 0.0), output_field=FloatField()) ,
+#     #     credito_total= Cast(Coalesce(Sum("credito"), 0.0),output_field=FloatField()) ,
+#     # )#.values_list('placa','cantidad','efectivo_total','credito_total')
+#     # ).values_list('placa','efectivo__sum','credito__sum')
+#     # values_list("name", "discount")
+#     print(conductor     )
+#     print('*******'     )
+#     print(conductor    )
+    
+#     datos = [
+#         {
+#             # 'placa':c.placa,
+#             # 'cantidad':c.cantidad,
+#             # 'efectivo_total':str(c.efectivo__sum),   
+#             # 'credito_total':c.credito_total,   
+#         }for c in conductor
+#     ]
+
+#     context = {'obj':vehiculos,'obj_reg':registros, 'obj_conductor':conductor}
+#     return render(request, "panel/panel.html", context  )
+
+
+
+def panelView(request):
+    vehiculos = Vehiculo.objects.all()    
+    if perfil:=PerfilConductor.objects.filter(usuario = request.user).first():
+        vehiculo = Vehiculo.objects.get(placa=perfil.vehiculo.pk)            
+        vehiculos = vehiculos.annotate(color=Case(
+                When(disponibilidad=Vehiculo.Disponibilidad.ACTIVO, then=Value("blue")),
+                When(disponibilidad=Vehiculo.Disponibilidad.INACTIVO, then=Value("black")),
+                When(disponibilidad=Vehiculo.Disponibilidad.ROJO, then=Value("red")),
+                When(disponibilidad=Vehiculo.Disponibilidad.VERDE, then=Value("green")),
+                default=Value("black")
+                ), icon=Case(
+                When(tipo=Vehiculo.Tipo.MINIVAN, then=Value("car")),
+                When(tipo=Vehiculo.Tipo.VAN, then=Value("truck")),
+                When(tipo=Vehiculo.Tipo.CAMION, then=Value("truck-loading")),
+                When(tipo=Vehiculo.Tipo.ESTACAS, then=Value("truck-monster")),
+                default=Value("train"),
+                ), color_mecanico=Case(
+                When(mecanico=True, then=Value("red")),
+                When(mecanico=False, then=Value("black")),         
+                default=Value("blue"),
+                ), color_restaurante=Case(
+                When(restaurante=True, then=Value("green")),
+                When(restaurante=False, then=Value("black")),         
+                default=Value("blue"),
+                ), color_enfermo=Case(
+                When(enfermo=True, then=Value("green")),
+                When(enfermo=False, then=Value("black")),         
+                default=Value("blue")),)            
+        if request.user.is_superuser and vehiculo:                       
+            vehiculos = vehiculos.exclude(estado = False) #.filter(estado = True)
+        elif vehiculo:
+            vehiculos = vehiculos.filter(estado = True,placa=vehiculo.placa)
+    
+    paginator = Paginator(vehiculos, 3)  # Show 25 contacts per page.
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    date = datetime.now().replace(hour=0,minute=0,second=0,microsecond=0)
+    fecha= request.GET.get('fecha')  #datetime.strptime(fecha,'%d/%m/%Y').replace(hour=0,minute=0,second=0,microsecond=0)
+    
+    if fecha:                
+        try:            
+            date = datetime.strptime(fecha,'%d/%m/%Y').replace(hour=0,minute=0,second=0,microsecond=0)
+        except Exception as e:
+            print('parametro fecha error',e)
+            
+    fecha= f'{date.day}/{date.month}/{date.year}'
+    
+    registros = Registro.objects.filter(fecha__range=(date, date.replace(hour=23,minute=59,second=59,microsecond=999999))).order_by("-fecha")
+    
+    conductor: BaseManager[Registro] = Registro.objects.filter(estado=True,
+               fecha__range=(date, date.replace(hour=23,minute=59,second=59,microsecond=999999))  
+        ).values('placa','placa__conductor__nombre' ).annotate(
+        cantidad= Cast(Coalesce(Count("placa"),0), output_field = IntegerField()),       
+        valor_total= Cast(Coalesce(Sum("valor"), 0.0), output_field=FloatField()) ,   
+        efectivo_total= Cast(Coalesce(Sum("efectivo"), 0.0), output_field=FloatField()) ,   
+        credito_total= Cast(Coalesce(Sum("credito"), 0.0),output_field=FloatField()) , 
+        transferencia_total= Cast(Coalesce(Sum("transferencia"), 0.0),output_field=FloatField()) , 
+    )
+
+    conductor = conductor.order_by("-cantidad","-valor_total")
+    form = PanelForm()
+    if request.method == 'GET':        
+        form = PanelForm({'fecha':fecha,'page':page_number})
+    context = {
+        'form':form,
+        'obj':vehiculos,
+        'obj_reg':registros,
+        'obj_conductor':conductor,
+        "page_obj": page_obj,
+        "page":page_obj.number,
+        "fecha":fecha,
+        "height": "55px",
+        "width": "55px",
+    }
+    return render(request,"panel/panel.html",context)

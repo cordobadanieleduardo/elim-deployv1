@@ -40,12 +40,32 @@
                                 </small>
                                 <div class="dropdown-divider"></div>
                                 {{form.fecha.label}}
-                                <input type="datetime" name="fecha" id="fecha" required class="form-control" maxlength="19" autocomplete="off">
+                                {{form.fecha}}                                
+                                {{form.factura.label}}
+                                {{form.factura}}
+                                <br>
                                 {{form.valor.label}}
                                 {{form.valor}} 
                                 {{form.medio_pago}}
                                 {{form.concepto}}
+                                <br>
+                                {{form.descripcion.label}}
+                                {{form.descripcion}}
+                                <br>
+                                {{form.imagen.label}}
                                 {{form.imagen}}
+                                <br>
+                                
+                                <label for="id_estado_aceptacion" id="id_estado_label" class="form-control"> Aceptar o rechazar</label>
+                                {{form.estado_aceptacion}}
+
+                                <label for="id_vehiculo" id="id_vehiculo_label" class="form-control"> Vehiculo</label>
+                                
+                                <!-- {#% if request.user.is_superuser %#}                             -->
+                                    
+                                    {{form.vehiculo}}                                   
+                                <!-- {#% endif %#} -->
+                                
                                 <div class="dropdown-divider"></div>
                                 <div class="row">
                                     <div class="col">
@@ -71,16 +91,27 @@
 
 {% block js_page %}
 <script>
-
-    $("#fecha").datetimepicker({
-        format: 'd/m/Y H:i:s',
-        timepicker:true,
-     // minDate:'16/02/2025 00:00:00'    
-    });
-
     $(function () {
-        $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
+        $("#sidebarToggle").click();  
+        $("#id_vehiculo").val("{{ obj.vehiculo.placa }}").change();
+        // $("#id_fecha").val("{{ obj.fecha|date:'d/m/Y' }}");
+
+        if ("{{request.user.is_superuser}}" === "False"){            
+            $("#id_estado_aceptacion").attr({hidden: true});
+            $("#id_estado_label").attr({hidden: true});
+            // $('#id_vehiculo option').attr('disabled', 'disabled');
+            $('#id_vehiculo_label').hide();
+            $('#id_vehiculo').hide();
+        }
     });
+
+    $("#id_fecha").datetimepicker({
+        format: 'd/m/Y H:i:s',
+        timepicker:true ,
+        // defaultDate:new Date(),
+        // minDate: 0, /** AAAA,MM,DD Fecha inicio */
+        // maxDate: new Date( new Date().getFullYear(), 12, 31),
+    });  
 </script>
 
 {% endblock %}

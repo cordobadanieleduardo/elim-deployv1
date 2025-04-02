@@ -7,6 +7,7 @@ urlpatterns = [
     path('',include(('bases.urls','bases'), namespace='bases')),
     path('elim/',include(('elim.urls','elim'), namespace='elim')),
     path('api/', include(('api.urls', 'api'), namespace='api')),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('admin/', admin.site.urls),
 ]
 

@@ -1,0 +1,142 @@
+{% extends 'base/base.html' %}
+
+{% load static %}
+
+{% block page_content %}
+<div class="panel-body">
+    <div>
+<!-- <div class="modal-dialog modal-fullscreen-sm-down">
+    <div class="modal-content"> -->
+        {% if obj.placa  %}
+        <!-- <form method="POST" role="form" id="frm" class="form-inline" enctype="multipart/form-data"> -->
+        <form method="POST" role="form" id="frm" class="" action="{% url 'elim:status_edit' obj.placa %}" enctype="multipart/form-data">
+        {% else %}
+        <!-- <form method="POST" role="form" id="frm" class="form-inline" enctype="multipart/form-data"> -->
+        <form method="POST" role="form" id="frm" class="" action="{% url 'elim:vehiculo_new' %}" enctype="multipart/form-data">
+        {% endif %}
+            <div class="col-xl-12 col-md-12 mb-12">
+                {% if obj.placa %}
+                <div class="card border-left-warning shadow h-100 py-2">
+                {% else %}
+                <div class="card border-left-success shadow h-100 py-2">
+                {% endif %}
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    {% if obj.placa %} Editar {% else %} Nueva {% endif %} Conductores y vehiculos
+                                </div>
+                                
+                                {% csrf_token %}
+
+                                <small class="text-danger">
+                                    {% if form.errors %}
+                                        {% for field in form %}
+                                            {% if field.errors %}
+                                                {% for error in field.errors %}
+                                                    {{ error|escape }}
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    
+                                        {% if form.non_field_errors%}
+                                            {% for error in form.non_field_errors %}
+                                                {{ error|escape }}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                                </small>
+
+                                <div class="dropdown-divider"></div>
+
+                                <div class="row"> 
+                                    <div class="col">
+                                        {{form.placa.label}}  
+                                        {{form.placa}} 
+                                        {{form.tipo.label}}  
+                                        {{form.tipo}} 
+                                        {{form.hora.label}}  
+                                        {{form.hora}}                                      
+                                    </div>                                   
+                                </div>  
+                                <div class="row mt-2 mb-2"> 
+                                    <div class="col">
+                                        <!-- {{form.conductor.label}}                                     -->
+                                        <label for="id_conductor"> Conductor:</label>
+                                        {{form.conductor}}  
+                                        <!-- {{form.conductor.errors}}                                     -->
+                                    </div>                                   
+                                </div>
+                                <div class="row"> 
+                                    <div class="col">
+                                        {{form.disponibilidad.label}} 
+                                        {{form.disponibilidad}}                                    
+                                    </div>                                   
+                                </div>
+                                <div class="row"> 
+                                    <div class="col">
+                                        {{form.mecanico.label}} 
+                                        {{form.mecanico}}                                    
+                                    </div>  
+                                    <div class="col">
+                                        {{form.restaurante.label}} 
+                                        {{form.restaurante}}                                    
+                                    </div>
+                                    <div class="col">
+                                        {{form.enfermo.label}} 
+                                        {{form.enfermo}}                                    
+                                    </div>                                    
+                                </div>   
+
+                                <div class="dropdown-divider"></div>
+
+                                <div class="row">
+                                    <div class="col">
+                                        <button type="submit" class="btn btn-danger">
+                                            <span class="fa fa-save"></span> 
+                                            Guardar
+                                        </button>
+                                        <a type="button" href="{% url 'elim:panel_view' %}" class="btn btn-success">
+                                            Cancelar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js_page %}
+<script>
+
+    // document.getElementById('placa').focus();
+    $(function () {
+        // $("#direccion").focus();
+        // $("#direccion").val("{{ obj.direccion }}");
+        // $("#fecha").val("{{ obj.fecha|date:'d/m/Y H:i:s' }}");
+        // $("#direccion").val("{{ obj.direccion }}").change();
+        // $("#trayecto").val("{{ obj.trayecto }}").change();
+        // $("#placa").val("{{ obj.placa }}").change();
+        // $("#solicitado_por").val("{{ obj.solicitado_por }}").change();
+    });
+
+
+    $("#id_hora").datetimepicker({
+        format: 'd/m/Y H:i:s',
+        timepicker: true,
+    });
+
+    $('#id_conductor').select2({
+        placeholder: "Seleccione un conductor",
+        allowClear: true
+    });
+
+</script>
+
+{% endblock %}

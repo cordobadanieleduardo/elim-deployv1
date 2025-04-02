@@ -11,11 +11,10 @@ class MixinFormInvalid:
     def form_invalid(self,form):
         response = super().form_invalid(form)
         print('self',self.request)
-        if self.request.is_ajax():
+        if not self.request.is_ajax():
             print('a')
-            return JsonResponse(form.errors, status=400)
-        else:
-            return response
+            return response        
+        return JsonResponse(form.errors, status=400)
 
 class SinPrivilegios(LoginRequiredMixin, PermissionRequiredMixin, MixinFormInvalid):
     login_url = 'bases:login'
@@ -24,7 +23,8 @@ class SinPrivilegios(LoginRequiredMixin, PermissionRequiredMixin, MixinFormInval
 
     def handle_no_permission(self):
         from django.contrib.auth.models import AnonymousUser
-        if not self.request.user==AnonymousUser():
+        # if not self.request.user==AnonymousUser():
+        if self.request.user != AnonymousUser():
             self.login_url='bases:sin_privilegios'
         return HttpResponseRedirect(reverse_lazy(self.login_url))
 
