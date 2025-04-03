@@ -93,6 +93,7 @@
       {% url 'elim:reg_direccion_new' as trayecto_url %}
       {% url 'elim:reg_list' as registro_url %}
       {% url 'elim:gasto_list' as gastoconductor_url %}
+      {% url 'elim:panel_view' as panel_url %}
       <!-- Nav Item - Pages Collapse Menu -->
       <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
@@ -102,6 +103,11 @@
         </a>
         <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
+            {% if perms.elim.view_registro %}
+            <h6 class="collapse-header">Panel</h6>
+            <a class="collapse-item" href="{{panel_url}}">Panel</a>
+            {% endif %}
+          
             {% if perms.elim.view_registro %}
             <h6 class="collapse-header">Catálogos de registros:</h6>
             <a class="collapse-item" href="{{registro_url}}">Registros</a>
