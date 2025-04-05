@@ -1,0 +1,25 @@
+p{
+    font-size: xx-large;
+}
+
+img{
+    height: 300px;
+    width: 300px;
+    float: right;
+}
+
+#imagen-flotante {
+    position: fixed;
+    top: 83%;
+    left: 83%;
+    transform: translate(-50%, -50%);
+}
+
+
+body{
+    background: gainsboro;
+}
+
+ul{
+   font-size: x-large; 
+}
